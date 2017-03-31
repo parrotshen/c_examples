@@ -1,2 +1,1 @@
-# helloworld
-This is a test project
+This is a C example repository.

@@ -126,6 +126,7 @@ int parse_string_into_token(char *pString, tParseTokenCb pParseFunc)
     char  token[TOKEN_SIZE+1];
     char *pNext = pString;
     int   count = 1;
+    int   action;
 
     if (NULL == pString)
     {
@@ -137,8 +138,10 @@ int parse_string_into_token(char *pString, tParseTokenCb pParseFunc)
     {
         if ( token[0] )
         {
-            pParseFunc(token, strlen( token ), count);
+            action = pParseFunc(token, strlen( token ), count);
             count++;
+
+            if (PARSE_STOP == action) break;
         }
     }
 
@@ -156,6 +159,7 @@ int parse_file_into_line(char *pFileName, tParseLineCb pParseFunc)
     char  line[LINE_SIZE+1];
     FILE *pInput = NULL;
     int   count = 1;
+    int   action;
 
     if ((pInput=fopen(pFileName, "r")) == NULL)
     {
@@ -166,8 +170,10 @@ int parse_file_into_line(char *pFileName, tParseLineCb pParseFunc)
     /* start reading input file */
     while ( parse_line(pInput, line, LINE_SIZE) )
     {
-        pParseFunc(line, strlen( line ), count);
+        action = pParseFunc(line, strlen( line ), count);
         count++;
+
+        if (PARSE_STOP == action) break;
     }
 
     fclose( pInput );
@@ -543,24 +549,23 @@ int str2hex(char *pStr, unsigned char *pBuf, int bufSize)
 
 /**
  * Dump memory.
- * @param [in]  pName  Description string.
+ * @param [in]  pDesc  Description string.
  * @param [in]  pAddr  Memory address.
  * @param [in]  size   Memory size.
- * @returns  Success(> 0) or failure(0).
  */
-void mem_dump(char *pName, void *pAddr, int size)
+void mem_dump(char *pDesc, void *pAddr, int size)
 {
     unsigned char *pByte = (unsigned char *)pAddr;
     int i = 0;
                                                                                                                              
     if (pAddr == NULL)
     {
-        fprintf(stderr, "%s (NULL)\n", pName);
+        fprintf(stderr, "%s (NULL)\n", pDesc);
         fprintf(stderr, "\n");
         return;
     }
                                                                                                                              
-    fprintf(stderr, "%s (%d bytes)\n", pName, size);
+    fprintf(stderr, "%s (%d bytes)\n", pDesc, size);
     for (i=0; i<size; i++)
     {
         if ((i != 0) && ((i % 16) == 0))

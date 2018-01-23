@@ -7,10 +7,10 @@ PWD_DIR = $(shell /bin/pwd)
 
 all: libinitial.so main
 
-## shared library linked, you should copy libshared.so
+## shared library linked, you should copy libinitial.so
 ## to /lib or other lib directory before you execute ./main
 main: main.o
-	$(CC) -Wall -o $@ main.o -L. -lshared  # -L specify the library directory
+	$(CC) -Wall -o $@ main.o -L. -linitial  # -L specify the library directory
 
 main.o: main.c initial.h
 	$(CC) -Wall -c $<

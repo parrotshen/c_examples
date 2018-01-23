@@ -10,20 +10,26 @@
 //    Macro declarations
 // /////////////////////////////////////////////////////////////////////////////
 
-#define IS_UPPER_ALHPABET(ch)  (ch >= 'A' && ch <= 'Z')
-#define IS_LOWER_ALHPABET(ch)  (ch >= 'a' && ch <= 'z')
-#define IS_NUMBER(ch)          (ch >= '0' && ch <= '9')
-#define IS_SPACE(ch)           (ch == ' ' || ch == '\t')
-#define LINE_SIZE   (1023)
-#define TOKEN_SIZE  (255)
+#define IS_UPPER_ALHPABET(ch)  ((ch >= 'A') && (ch <= 'Z'))
+#define IS_LOWER_ALHPABET(ch)  ((ch >= 'a') && (ch <= 'z'))
+#define IS_NUMBER(ch)          ((ch >= '0') && (ch <= '9'))
+#define IS_SPACE(ch)           ((ch == ' ') || (ch == '\t'))
+#define LINE_SIZE              (1023)
+#define TOKEN_SIZE             (255)
 
 
 // /////////////////////////////////////////////////////////////////////////////
 //    Type declarations
 // /////////////////////////////////////////////////////////////////////////////
 
-typedef void (*tParseLineCb)(char *pStr, int len, int count);
-typedef void (*tParseTokenCb)(char *pStr, int len, int count);
+typedef enum
+{
+    PARSE_CONTINUE = 0,
+    PARSE_STOP
+} tParseAction;
+
+typedef int (*tParseLineCb)(char *pStr, int len, int count);
+typedef int (*tParseTokenCb)(char *pStr, int len, int count);
 
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -120,12 +126,11 @@ int str2hex(char *pStr, unsigned char *pBuf, int bufSize);
 
 /**
  * Dump memory.
- * @param [in]  pName  Description string.
+ * @param [in]  pDesc  Description string.
  * @param [in]  pAddr  Memory address.
  * @param [in]  size   Memory size.
- * @returns  Success(> 0) or failure(0).
  */
-void mem_dump(char *pName, void *pAddr, int size);
+void mem_dump(char *pDesc, void *pAddr, int size);
 
 
 #endif

@@ -1,6 +1,6 @@
-CC = /usr/bin/gcc
-AR = /usr/bin/ar
-LD = /usr/bin/ld
+CC = gcc
+AR = ar
+LD = ld
 
 
 all: libarchive.a main

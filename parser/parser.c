@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include "utility.h"
 
-void display_token(char *pStr, int len, int count)
+int display_token(char *pStr, int len, int count)
 {
     printf("%s\n", pStr);
+
+    return PARSE_CONTINUE;
 }
 
-void display_line(char *pStr, int len, int count)
+int display_line(char *pStr, int len, int count)
 {
     #if 0
     printf("%d  ", count);
@@ -15,6 +17,8 @@ void display_line(char *pStr, int len, int count)
     parse_string_into_token(pStr, display_token);
     printf("\n");
     #endif
+
+    return PARSE_CONTINUE;
 }
 
 int main(int argc, char *argv[])

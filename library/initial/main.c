@@ -3,7 +3,7 @@
 
 int main(void)
 {
-   test();
+   stop();
 
    return 0;
 }

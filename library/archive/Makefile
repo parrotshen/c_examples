@@ -6,7 +6,7 @@ LD = ld
 all: libarchive.a main
 
 main: main.o
-	$(CC) -Wall -o $@ main.o libarchive.a
+	$(CC) -o $@ main.o libarchive.a
 
 main.o: main.c archive.h
 	$(CC) -Wall -c $<
@@ -16,10 +16,10 @@ main.o: main.c archive.h
 libarchive.a: hello.o world.o
 	$(AR) rcs $@ $^
 
-hello.o: hello.c
+hello.o: hello.c archive.h
 	$(CC) -Wall -c $<
 
-world.o: world.c
+world.o: world.c archive.h
 	$(CC) -Wall -c $<
 
 

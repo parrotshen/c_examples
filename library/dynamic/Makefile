@@ -7,12 +7,12 @@ all: libshared.so.1.0.1 main
 
 main: main.c
 	$(CC) -Wall -c main.c
-	$(CC) -Wall -ldl -o main main.o
+	$(CC) -ldl -o main main.o
 
 
 ## build share library ##
 libshared.so.1.0.1: hello.o world.o
-	$(CC) -shared -Wall -o $@ $^
+	$(CC) -shared -o $@ $^
 	ln -sf libshared.so.1.0.1 libshared.so.1
 	ln -sf libshared.so.1     libshared.so
 

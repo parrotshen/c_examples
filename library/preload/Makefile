@@ -6,13 +6,13 @@ LD = ld
 all: libpreload.so print time
 
 print: print.o
-	$(CC) -Wall -o $@ $^
+	$(CC) -o $@ $^
 
 print.o: print.c
 	$(CC) -Wall -c $<
 
 time: time.o
-	$(CC) -Wall -o $@ $^
+	$(CC) -o $@ $^
 
 time.o: time.c
 	$(CC) -Wall -c $<
@@ -20,7 +20,7 @@ time.o: time.c
 
 ## build shared library ##
 libpreload.so: preload.o
-	$(CC) -shared -Wall -o $@ $^
+	$(CC) -shared -o $@ $^
 
 preload.o: preload.c
 	$(CC) -fPIC -Wall -c $<

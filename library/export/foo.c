@@ -1,13 +1,20 @@
 #include <stdio.h>
 
-void hello_world(void)
+void hello(const char *caller)
 {
-   printf("%s: Hello world !!\n\n", __FILE__);
+   printf("%s: %s --> hello\n", __FILE__, caller);
+}
+
+void world(const char *caller)
+{
+   printf("%s: %s --> world\n", __FILE__, caller);
 }
 
 void foo(void)
 {
    printf("%s: foo()\n", __FILE__);
-   hello_world();
+   hello(__func__);
+   world(__func__);
+   printf("\n");
 }
 

@@ -18,7 +18,7 @@ main.o: main.c shared.h
 
 ## build share library ##
 libshared.so.1.0.1: hello.o world.o
-	$(CC) -shared -o $@ $^
+	$(CC) -shared -Wl,-soname,libshared.so.1 -o $@ $^
 	ln -sf libshared.so.1.0.1 libshared.so.1
 	ln -sf libshared.so.1     libshared.so
 

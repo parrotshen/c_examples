@@ -1,9 +1,12 @@
-STRONG_SYMBOL = 1
+STRONG_SYMBOL = 0
+WEAK_SYMBOL   = 0
 
 CC = gcc
 
 
 all: libweak.so main
+	@echo "STRONG_SYMBOL = $(STRONG_SYMBOL)"
+	@echo "WEAK_SYMBOL   = $(WEAK_SYMBOL)"
 
 
 main: main.o
@@ -17,7 +20,7 @@ libweak.so: weak.o
 	$(CC) -shared -o $@ $<
 
 weak.o: weak.c weak.h
-	$(CC) -fPIC -Wall -c $<
+	$(CC) -fPIC -Wall -D__WEAK_SYMBOL__=$(WEAK_SYMBOL) -c $<
 
 
 clean:

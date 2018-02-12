@@ -5,7 +5,7 @@
 void hello_world(void)
 {
     printf("\n");
-    printf("%s: %s()\n", __FILE__, __func__);
+    printf("%s: %s is a strong symbol\n", __FILE__, __func__);
     printf("\n");
 }
 #endif

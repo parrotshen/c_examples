@@ -18,7 +18,7 @@ lib: libstatic.so.1.0.1 libstatic.a
 
 ## build share library ##
 libstatic.so.1.0.1: hello.o world.o
-	$(CC) -shared -o $@ $^
+	$(CC) -shared -Wl,-soname,libstatic.so.1 -o $@ $^
 	ln -sf libstatic.so.1.0.1 libstatic.so.1
 	ln -sf libstatic.so.1     libstatic.so
 

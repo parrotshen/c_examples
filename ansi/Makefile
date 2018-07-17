@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall
 
-all: color control
+all: color control ascii
 
 color: color.c
 	$(CC) $(CFLAGS) $< -o $@
@@ -9,5 +9,8 @@ color: color.c
 control: control.c
 	$(CC) $(CFLAGS) $< -o $@
 
+ascii: ascii.c
+	$(CC) $(CFLAGS) $< -o $@
+
 clean:
-	rm -f color control
+	rm -f color control ascii

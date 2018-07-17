@@ -13,7 +13,7 @@ int main(void)
 {
     printf("\\a  0x%02X  BELL             [%c]\n", BEL, BEL);
     printf("\\b  0x%02X  BACKSPACE        [%c]\n", BS, BS);
-    printf("\\e  0x%02X  ESCAPE           []\n", ESC);
+    printf("\\e  0x%02X  ESCAPE           \n", ESC);
     printf("\\n  0x%02X  LINE FEED        [%c]\n", LF, LF);
     printf("\\r  0x%02X  CARRIAGE RETURN  [%c]\n", CR, CR);
     printf("\\t  0x%02X  HORIZONTAL TAB   [%c]\n", HT, HT);
@@ -22,3 +22,4 @@ int main(void)
     printf("\n");
     return 0;
 }
+

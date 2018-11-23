@@ -1,16 +1,27 @@
 CC = gcc
 CFLAGS = -Wall
 
-all: factorial random shift
+APPS = factorial random shift div_64bits div_negative
 
-factorial: factorial.c
+all: $(APPS)
+
+factorial: factorial.o
 	$(CC) $(CFLAGS) $< -o $@
 
-random: random.c
+random: random.o
 	$(CC) $(CFLAGS) $< -o $@
 
-shift: shift.c
+shift: shift.o
 	$(CC) $(CFLAGS) $< -o $@
+
+div_64bits: div_64bits.o
+	$(CC) $(CFLAGS) $< -o $@
+
+div_negative: div_negative.o
+	$(CC) $(CFLAGS) $< -o $@
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f factorial random shift
+	rm -f $(APPS) *.o

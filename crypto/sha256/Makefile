@@ -1,13 +1,14 @@
 CC = gcc
-APP_NAME = crc_test
+APP_NAME = sha256_test
 
 
-#################
+##################
 # Source
 ##################
 
 SRC = main.c
-SRC += crc32.c
+SRC += crypto_sha.c
+SRC += ../utility/utility.c
 
 
 ##################
@@ -15,6 +16,8 @@ SRC += crc32.c
 ##################
 
 CFLAGS = -Wall
+CFLAGS += -D_LITTLE_ENDIAN_
+CFLAGS += -I../utility/
 
 
 ##################
@@ -24,13 +27,12 @@ CFLAGS = -Wall
 LDFLAGS = -Wall
 
 
-DEP_CFLAGS = $(filter-out -g, $(CFLAGS))
-DEPEND_CMD = $(CC) $(DEP_CFLAGS) -M $<
-
-
 #################
 # Build
 #################
+
+DEP_CFLAGS = $(filter-out -g, $(CFLAGS))
+DEPEND_CMD = $(CC) $(DEP_CFLAGS) -M $<
 
 OBJS = $(SRC:.c=.o)
 DEPS = $(SRC:.c=.c.d)

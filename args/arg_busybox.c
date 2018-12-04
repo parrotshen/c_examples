@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <libgen.h>  /* basename */
 
 
 typedef struct _tFuncArray
@@ -18,12 +19,12 @@ void my_cat(void);
 
 tFuncArray fnc_array[] =
 {
-    { "./arg_busybox", arg_busybox },
-    { "./ps",          my_ps       },
-    { "./ls",          my_ls       },
-    { "./cp",          my_cp       },
-    { "./rm",          my_rm       },
-    { "./cat",         my_cat      }
+    { "arg_busybox", arg_busybox },
+    { "ps",          my_ps       },
+    { "ls",          my_ls       },
+    { "cp",          my_cp       },
+    { "rm",          my_rm       },
+    { "cat",         my_cat      }
 };
 int fun_num = sizeof(fnc_array) / sizeof(tFuncArray);
 
@@ -73,11 +74,15 @@ void my_cat(void)
 
 int main(int argc, char *argv[])
 {
+   char *pName;
    int i;
+
+   pName = basename( argv[0] );
+   //printf("argv[0] = %s\n\n", pName);
 
    for (i=0; i<fun_num; i++)
    {
-       if (strcmp(argv[0], fnc_array[i].name) == 0)
+       if (strcmp(pName, fnc_array[i].name) == 0)
        {
            fnc_array[i].exec();
            break;

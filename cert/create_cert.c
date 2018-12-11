@@ -279,12 +279,12 @@ void help(void)
 
 int main(int argc, char *argv[])
 {
-    char *pRoot = NULL;
-    char *pName = NULL;
+    char *root = NULL;
+    char *file = NULL;
     char *country = "TW";
     char *org = "Hello Technology";
     char *cn = "Example";
-    char *dns = NULL;//"lkk.org.tw";
+    char *dns = NULL;
     int   serial = 168;
     int   days = 365;
 
@@ -318,10 +318,10 @@ int main(int argc, char *argv[])
                 days = atoi( optarg );
                 break;
             case 'f':
-                pName = optarg;
+                file = optarg;
                 break;
             case 'k':
-                pRoot = optarg;
+                root = optarg;
                 break;
             case 'h':
             default:
@@ -339,18 +339,28 @@ int main(int argc, char *argv[])
                   dns,
                   serial,
                   days,
-                  pRoot
+                  root
               );
     if ( success )
     {
-        if ( pName )
+        printf("Country      : %s\n", country);
+        printf("Organization : %s\n", org);
+        printf("Common name  : %s\n", cn);
+        printf("DNS          : %s\n", dns);
+        printf("Serial number: %d\n", serial);
+        printf("Valid days   : %d\n", days);
+        printf("Sign         : %s\n", root);
+        printf("\n");
+
+        if ( file )
         {
-            SaveCertificate(pName, x509, pkey);
+            SaveCertificate(file, x509, pkey);
         }
         else
         {
             PEM_write_PrivateKey(stdout, pkey, NULL, NULL, 0, NULL, NULL);
             PEM_write_X509(stdout, x509);
+            fprintf(stdout, "\n");
         }
 
         X509_free( x509 );

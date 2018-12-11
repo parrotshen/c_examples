@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
             if ((i != 0) && ((i % 16) == 0))
             {
                 printf("\n");
-             }
+            }
             printf(" %02X", *(pByte+i));
         }
         printf("\n");

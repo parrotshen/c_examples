@@ -1092,6 +1092,9 @@ void crypto_aes_decrypt(tCryptoAesCtx *pCtx, uint8 *pOut, uint8 *pIn)
 	uint32_out ((pOut + 12), b0[3]);
 }
 
+
+#define AES_CBC_DEBUG (1)
+
 /**
  * Encrypt a sequence of data in CBC mode.
  * @param [in]  pCtx   A @ref tCryptoAesCtx object.
@@ -1108,23 +1111,82 @@ void crypto_aes_cbc_encrypt(
     uint8         *pIv
 )
 {
-    uint8 *out = pOut;
-    uint8 *in  = (uint8 *)pIn;
-    uint8 *cbc_iv = pIv;
-    uint32 loop = inLen / 16;
-    uint32 i, j;
+    uint8  *IV = pIv;
+    uint8  *C  = pOut;
+    uint8  *P  = pIn;
+    uint32  n;
+    uint32  r;
+    int     i;
 
-   
-    for (i=0; i<loop; i++)
+
+    n = CRYPTO_AES_BLOCK_NUM( inLen );
+    r = CRYPTO_AES_REMAIN_LEN( inLen );
+    #if (AES_CBC_DEBUG)
+    printf("Block# is %d (%u bytes)\n\n", n, inLen);
+    #endif
+
+    if (1 == n)
     {
-        for (j=0; j<16; j++)
+        #if (AES_CBC_DEBUG)
+        printf("Block[%d]\n", 0);
+        #endif
+
+        // Encrypt the first Block length less than 16 bytes
+        util_xor(C, IV, P, inLen);
+        crypto_aes_encrypt(pCtx, C, C);
+        #if (AES_CBC_DEBUG)
+        printf("C\n");
+        util_dump(C, inLen);
+        #endif
+    }
+    else
+    {
+        for (i=0; i<n; i++)
         {
-            pIv[j] = cbc_iv[j] ^ in[j];
+            #if (AES_CBC_DEBUG)
+            printf("Block[%d]\n", i);
+            #endif
+
+            if ((i == (n-1)) && (r > 0))
+            {
+                // Encrypt in Residual Terminal Block Processing
+                memcpy(C, IV, CRYPTO_AES_BLOCK_SIZE);
+                util_xor(C, C, P, r);
+                #if (AES_CBC_DEBUG)
+                printf("Pn\n");
+                util_dump(P, r);
+                printf("Pn^Cn\n");
+                util_dump(C, CRYPTO_AES_BLOCK_SIZE);
+                #endif
+
+                crypto_aes_encrypt(pCtx, C, C);
+                #if (AES_CBC_DEBUG)
+                printf("Cn\n");
+                util_dump(C, CRYPTO_AES_BLOCK_SIZE);
+                #endif
+            }
+            else
+            {
+                // Encrypt Block 1 ~ n-1
+                util_xor(C, IV, P, CRYPTO_AES_BLOCK_SIZE);
+                #if (AES_CBC_DEBUG)
+                printf("P\n");
+                util_dump(P, CRYPTO_AES_BLOCK_SIZE);
+                printf("P^IV\n");
+                util_dump(C, CRYPTO_AES_BLOCK_SIZE);
+                #endif
+
+                crypto_aes_encrypt(pCtx, C, C);
+                #if (AES_CBC_DEBUG)
+                printf("C\n");
+                util_dump(C, CRYPTO_AES_BLOCK_SIZE);
+                #endif
+
+                IV  = C;
+                P  += CRYPTO_AES_BLOCK_SIZE;
+                C  += CRYPTO_AES_BLOCK_SIZE;
+            }
         }
-        crypto_aes_encrypt(pCtx, out, pIv);
-        cbc_iv = out;
-        out += 16;
-        in  += 16;
     }
 }
 
@@ -1144,27 +1206,81 @@ void crypto_aes_cbc_decrypt(
     uint8         *pIv
 )
 {
-    uint8 *out = pOut;
-    uint8 *in  = (uint8 *)pIn;
-    uint8 cbc_iv[16];
-    uint8 out_buff[16];
-    uint32 loop = inLen / 16;
-    uint32 i, j;
+    uint8  *IV = pIv;
+    uint8  *P  = pOut;
+    uint8  *C  = pIn;
+    uint32  n;
+    uint32  r;
+    int     i;
 
-    memcpy(cbc_iv, pIv, 16);
-    for (i=0; i<loop; i++)
+
+    n = CRYPTO_AES_BLOCK_NUM( inLen );
+    r = CRYPTO_AES_REMAIN_LEN( inLen );
+    #if (AES_CBC_DEBUG)
+    printf("Block# is %d (%u bytes)\n\n", n, inLen);
+    #endif
+
+    if (1 == n)
     {
-        crypto_aes_decrypt(pCtx, out_buff, in);
-        
-        for (j=0; j<16; j++)
-        {
-            out_buff[j] ^= cbc_iv[j];
-        }
-        memcpy(cbc_iv, in, 16);        
-        memcpy(out, out_buff, 16);
+        #if (AES_CBC_DEBUG)
+        printf("Block[%d]\n", 0);
+        #endif
 
-        out += 16;
-        in  += 16;
+        //Decrypt the first Block length less than 16 bytes
+        memset(P, 0x00, CRYPTO_AES_BLOCK_SIZE);
+        memcpy(P, C, inLen);
+        crypto_aes_decrypt(pCtx, P, P);
+        util_xor(P, IV, P, CRYPTO_AES_BLOCK_SIZE);
+        #if (AES_CBC_DEBUG)
+        printf("P\n");
+        util_dump(P, inLen);
+        #endif
+    }
+    else
+    {
+        for (i=0; i<n; i++)
+        {
+            #if (AES_CBC_DEBUG)
+            printf("Block[%d]\n", i);
+            #endif
+
+            if ((i == (n-1)) && (r > 0))
+            {
+                //Decrypt in Residual Terminal Block Processing
+                memset(P, 0x00, CRYPTO_AES_BLOCK_SIZE);
+                memcpy(P, C, r);
+                crypto_aes_decrypt(pCtx, P, P);
+                #if (AES_CBC_DEBUG)
+                printf("Cn\n");
+                util_dump(P, CRYPTO_AES_BLOCK_SIZE);
+                #endif
+
+                util_xor(P, IV, P, r);
+                #if (AES_CBC_DEBUG)
+                printf("Pn\n");
+                util_dump(P, r);
+                #endif
+            }
+            else
+            {
+                //Decrypt Block 1 ~ n-1
+                crypto_aes_decrypt(pCtx, P, C);
+                #if (AES_CBC_DEBUG)
+                printf("C\n");
+                util_dump(P, CRYPTO_AES_BLOCK_SIZE);
+                #endif
+
+                util_xor(P, IV, P, CRYPTO_AES_BLOCK_SIZE);
+                #if (AES_CBC_DEBUG)
+                printf("P\n");
+                util_dump(P, CRYPTO_AES_BLOCK_SIZE);
+                #endif
+
+                IV  = C;
+                P  += CRYPTO_AES_BLOCK_SIZE;
+                C  += CRYPTO_AES_BLOCK_SIZE;
+            }
+        }
     }
 }
 

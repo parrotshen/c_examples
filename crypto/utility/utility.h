@@ -209,6 +209,15 @@ uint32 util_getBits(void *pByte, uint32 bit, uint8 num);
 void util_putBits(void *pByte, uint32 bit, uint8 num, uint32 value);
 
 /**
+ * Byte XOR (C = A ^ B).
+ * @param [out] pC    Output data.
+ * @param [in]  pA    Input data.
+ * @param [in]  pB    Input data.
+ * @param [in]  size  Input length.
+ */
+void util_xor(uint8 *pC, uint8 *pA, uint8 *pB, int size);
+
+/**
  * Dump memory.
  * @param [in]  pMem  Memory address.
  * @param [in]  size  size in bytes.

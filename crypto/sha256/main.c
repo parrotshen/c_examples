@@ -18,25 +18,25 @@ uint8 _DIGEST[] = {
 int main(void)
 {
     tCryptoSha256Ctx  ctx;
-    uint8  O[CRYPTO_SHA256_DIGEST_SIZE];
+    uint8  buf[CRYPTO_SHA256_DIGEST_SIZE];
     int    size;
 
 
-    memset(O, 0x00, CRYPTO_SHA256_DIGEST_SIZE);
+    memset(BUF, 0x00, CRYPTO_SHA256_DIGEST_SIZE);
     size = sizeof( _MESSAGE );
 
     /* SHA-256 hash function */
     crypto_sha256_init( &ctx );
     crypto_sha256_update(&ctx, _MESSAGE, size);
-    crypto_sha256_final(&ctx, O);
+    crypto_sha256_final(&ctx, buf);
 
     printf("Message: \n");
     util_dump(_MESSAGE, size);
 
     printf("Digest:\n");
-    util_dump(O, CRYPTO_SHA256_DIGEST_SIZE);
+    util_dump(buf, CRYPTO_SHA256_DIGEST_SIZE);
 
-    if ( memcmp(O, _DIGEST, CRYPTO_SHA256_DIGEST_SIZE) )
+    if ( memcmp(buf, _DIGEST, CRYPTO_SHA256_DIGEST_SIZE) )
     {
         printf("SHA-256 test ... ERROR\n");
         printf("Digest should be: \n");

@@ -16,7 +16,10 @@
 #define CRYPTO_AES_MIN_KEY_SIZE CRYPTO_AES_128_KEY_SIZE
 #define CRYPTO_AES_MAX_KEY_SIZE CRYPTO_AES_256_KEY_SIZE
 
-#define CRYPTO_AES_BLOCK_SIZE   (16)
+#define CRYPTO_AES_BLOCK_SIZE     (16)
+#define CRYPTO_AES_BLOCK_NUM(l)   (((l) / CRYPTO_AES_BLOCK_SIZE) + (((l) % CRYPTO_AES_BLOCK_SIZE) ? 1 : 0))
+#define CRYPTO_AES_REMAIN_LEN(l)  ((l) % CRYPTO_AES_BLOCK_SIZE)
+#define CRYPTO_AES_PADDING_LEN(l) ((CRYPTO_AES_BLOCK_SIZE - ((l) % CRYPTO_AES_BLOCK_SIZE)) % CRYPTO_AES_BLOCK_SIZE)
 
 
 // /////////////////////////////////////////////////////////////////////////////

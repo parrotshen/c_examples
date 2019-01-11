@@ -24,36 +24,36 @@
 #define E_KEY pCtx->E
 #define D_KEY pCtx->D
 
-#define ff_mult(a,b)    (a && b ? _f_mult(a, b) : 0)
+#define ff_mult(a,b)  (a && b ? _f_mult(a, b) : 0)
 
-#define f_rn(bo, bi, n, k)					\
-    bo[n] =  _ftTable[0][_byte(bi[n],0)] ^				\
-             _ftTable[1][_byte(bi[(n + 1) & 3],1)] ^		\
-             _ftTable[2][_byte(bi[(n + 2) & 3],2)] ^		\
+#define f_rn(bo, bi, n, k) \
+    bo[n] =  _ftTable[0][_byte(bi[n],0)] ^ \
+             _ftTable[1][_byte(bi[(n + 1) & 3],1)] ^ \
+             _ftTable[2][_byte(bi[(n + 2) & 3],2)] ^ \
              _ftTable[3][_byte(bi[(n + 3) & 3],3)] ^ *(k + n)
 
-#define i_rn(bo, bi, n, k)					\
-    bo[n] =  _itTable[0][_byte(bi[n],0)] ^				\
-             _itTable[1][_byte(bi[(n + 3) & 3],1)] ^		\
-             _itTable[2][_byte(bi[(n + 2) & 3],2)] ^		\
+#define i_rn(bo, bi, n, k) \
+    bo[n] =  _itTable[0][_byte(bi[n],0)] ^ \
+             _itTable[1][_byte(bi[(n + 3) & 3],1)] ^ \
+             _itTable[2][_byte(bi[(n + 2) & 3],2)] ^ \
              _itTable[3][_byte(bi[(n + 1) & 3],3)] ^ *(k + n)
 
-#define ls_box(x)				\
-    ( _flTable[0][_byte(x, 0)] ^			\
-      _flTable[1][_byte(x, 1)] ^			\
-      _flTable[2][_byte(x, 2)] ^			\
+#define ls_box(x) \
+    ( _flTable[0][_byte(x, 0)] ^ \
+      _flTable[1][_byte(x, 1)] ^ \
+      _flTable[2][_byte(x, 2)] ^ \
       _flTable[3][_byte(x, 3)] )
 
-#define f_rl(bo, bi, n, k)					\
-    bo[n] =  _flTable[0][_byte(bi[n],0)] ^				\
-             _flTable[1][_byte(bi[(n + 1) & 3],1)] ^		\
-             _flTable[2][_byte(bi[(n + 2) & 3],2)] ^		\
+#define f_rl(bo, bi, n, k) \
+    bo[n] =  _flTable[0][_byte(bi[n],0)] ^ \
+             _flTable[1][_byte(bi[(n + 1) & 3],1)] ^ \
+             _flTable[2][_byte(bi[(n + 2) & 3],2)] ^ \
              _flTable[3][_byte(bi[(n + 3) & 3],3)] ^ *(k + n)
 
-#define i_rl(bo, bi, n, k)					\
-    bo[n] =  _ilTable[0][_byte(bi[n],0)] ^				\
-             _ilTable[1][_byte(bi[(n + 3) & 3],1)] ^		\
-             _ilTable[2][_byte(bi[(n + 2) & 3],2)] ^		\
+#define i_rl(bo, bi, n, k) \
+    bo[n] =  _ilTable[0][_byte(bi[n],0)] ^ \
+             _ilTable[1][_byte(bi[(n + 3) & 3],1)] ^ \
+             _ilTable[2][_byte(bi[(n + 2) & 3],2)] ^ \
              _ilTable[3][_byte(bi[(n + 1) & 3],3)] ^ *(k + n)
 
 
@@ -128,6 +128,7 @@
     i_rl(bo, bi, 1, k);     \
     i_rl(bo, bi, 2, k);     \
     i_rl(bo, bi, 3, k)
+
 
 // /////////////////////////////////////////////////////////////////////////////
 //    Type declarations
@@ -850,15 +851,15 @@ static uint32 _ilTable[4][256] = {
 static inline 
 uint32 _generic_rotr32 (const uint32 x, const unsigned bits)
 {
-	const unsigned n = bits % 32;
-	return (x >> n) | (x << (32 - n));
+    const unsigned n = bits % 32;
+    return (x >> n) | (x << (32 - n));
 }
 
 static inline 
 uint32 _generic_rotl32 (const uint32 x, const unsigned bits)
 {
-	const unsigned n = bits % 32;
-	return (x << n) | (x >> (32 - n));
+    const unsigned n = bits % 32;
+    return (x << n) | (x >> (32 - n));
 }
 
 /*
@@ -867,89 +868,101 @@ uint32 _generic_rotl32 (const uint32 x, const unsigned bits)
 static inline uint8
 _byte(const uint32 x, const unsigned n)
 {
-	return x >> (n << 3);
+    return x >> (n << 3);
 }
 
 static inline uint8 
 _f_mult (uint8 a, uint8 b)
 {
-	uint8 aa = _logTable[a], cc = aa + _logTable[b];
+    uint8 aa = _logTable[a], cc = aa + _logTable[b];
 
-	return _powTable[cc + (cc < aa ? 1 : 0)];
+    return _powTable[cc + (cc < aa ? 1 : 0)];
 }
 
 /* using static table */
 #if 0
 static void _genTables (void)
 {
-	uint32 i, t;
-	uint8 p, q;
+    uint32 i, t;
+    uint8 p, q;
 
-	/* log and power tables for GF(2**8) finite field with
-	   0x011b as modular polynomial - the simplest primitive
-	   root is 0x03, used here to generate the tables */
+    /* log and power tables for GF(2**8) finite field with
+       0x011b as modular polynomial - the simplest primitive
+       root is 0x03, used here to generate the tables */
 
-	for (i = 0, p = 1; i < 256; ++i) {
-		_powTable[i] = (uint8) p;
-		_logTable[p] = (uint8) i;
+    for (i = 0, p = 1; i < 256; ++i) {
+        _powTable[i] = (uint8) p;
+        _logTable[p] = (uint8) i;
 
-		p ^= (p << 1) ^ (p & 0x80 ? 0x01b : 0);
-	}
+        p ^= (p << 1) ^ (p & 0x80 ? 0x01b : 0);
+    }
 
-	_logTable[1] = 0;
+    _logTable[1] = 0;
 
-	for (i = 0, p = 1; i < 10; ++i) {
-		_rcoTable[i] = p;
+    for (i = 0, p = 1; i < 10; ++i) {
+        _rcoTable[i] = p;
 
-		p = (p << 1) ^ (p & 0x80 ? 0x01b : 0);
-	}
+        p = (p << 1) ^ (p & 0x80 ? 0x01b : 0);
+    }
 
-	for (i = 0; i < 256; ++i) {
-		p = (i ? _powTable[255 - _logTable[i]] : 0);
-		q = ((p >> 7) | (p << 1)) ^ ((p >> 6) | (p << 2));
-		p ^= 0x63 ^ q ^ ((q >> 6) | (q << 2));
-		_sbxTable[i] = p;
-		_isbTable[p] = (uint8) i;
-	}
+    for (i = 0; i < 256; ++i) {
+        p = (i ? _powTable[255 - _logTable[i]] : 0);
+        q = ((p >> 7) | (p << 1)) ^ ((p >> 6) | (p << 2));
+        p ^= 0x63 ^ q ^ ((q >> 6) | (q << 2));
+        _sbxTable[i] = p;
+        _isbTable[p] = (uint8) i;
+    }
 
-	for (i = 0; i < 256; ++i) {
-		p = _sbxTable[i];
+    for (i = 0; i < 256; ++i) {
+        p = _sbxTable[i];
 
-		t = p;
-		_flTable[0][i] = t;
-		_flTable[1][i] = rotl (t, 8);
-		_flTable[2][i] = rotl (t, 16);
-		_flTable[3][i] = rotl (t, 24);
+        t = p;
+        _flTable[0][i] = t;
+        _flTable[1][i] = rotl (t, 8);
+        _flTable[2][i] = rotl (t, 16);
+        _flTable[3][i] = rotl (t, 24);
 
-		t = ((uint32) ff_mult (2, p)) |
-		    ((uint32) p << 8) |
-		    ((uint32) p << 16) | ((uint32) ff_mult (3, p) << 24);
+        t = ((uint32) ff_mult (2, p)) |
+            ((uint32) p << 8) |
+            ((uint32) p << 16) | ((uint32) ff_mult (3, p) << 24);
 
-		_ftTable[0][i] = t;
-		_ftTable[1][i] = rotl (t, 8);
-		_ftTable[2][i] = rotl (t, 16);
-		_ftTable[3][i] = rotl (t, 24);
+        _ftTable[0][i] = t;
+        _ftTable[1][i] = rotl (t, 8);
+        _ftTable[2][i] = rotl (t, 16);
+        _ftTable[3][i] = rotl (t, 24);
 
-		p = _isbTable[i];
+        p = _isbTable[i];
 
-		t = p;
-		_ilTable[0][i] = t;
-		_ilTable[1][i] = rotl (t, 8);
-		_ilTable[2][i] = rotl (t, 16);
-		_ilTable[3][i] = rotl (t, 24);
+        t = p;
+        _ilTable[0][i] = t;
+        _ilTable[1][i] = rotl (t, 8);
+        _ilTable[2][i] = rotl (t, 16);
+        _ilTable[3][i] = rotl (t, 24);
 
-		t = ((uint32) ff_mult (14, p)) |
-		    ((uint32) ff_mult (9, p) << 8) |
-		    ((uint32) ff_mult (13, p) << 16) |
-		    ((uint32) ff_mult (11, p) << 24);
+        t = ((uint32) ff_mult (14, p)) |
+            ((uint32) ff_mult (9, p) << 8) |
+            ((uint32) ff_mult (13, p) << 16) |
+            ((uint32) ff_mult (11, p) << 24);
 
-		_itTable[0][i] = t;
-		_itTable[1][i] = rotl (t, 8);
-		_itTable[2][i] = rotl (t, 16);
-		_itTable[3][i] = rotl (t, 24);
-	}
+        _itTable[0][i] = t;
+        _itTable[1][i] = rotl (t, 8);
+        _itTable[2][i] = rotl (t, 16);
+        _itTable[3][i] = rotl (t, 24);
+    }
 }
 #endif
+
+/**
+ * Initialize AES.
+ */
+void crypto_aes_init(void)
+{
+    /* using static table */
+    #if 0
+    _genTables();
+    CRYTPO_LOG("AES: generate the static table\n");
+    #endif
+}
 
 /**
  * Set the key for AES context.
@@ -960,49 +973,49 @@ static void _genTables (void)
  */
 int crypto_aes_setKey(tCryptoAesCtx *pCtx, uint8 *pKey, uint16 keyLen)
 {
-	uint32 i, t, u, v, w;
+    uint32 i, t, u, v, w;
 
-	pCtx->keyLen = keyLen;
+    pCtx->keyLen = keyLen;
 
-	E_KEY[0] = uint32_in (pKey);
-	E_KEY[1] = uint32_in (pKey + 4);
-	E_KEY[2] = uint32_in (pKey + 8);
-	E_KEY[3] = uint32_in (pKey + 12);
+    E_KEY[0] = uint32_in (pKey);
+    E_KEY[1] = uint32_in (pKey + 4);
+    E_KEY[2] = uint32_in (pKey + 8);
+    E_KEY[3] = uint32_in (pKey + 12);
 
-	switch (keyLen) {
-	case 16:
-		t = E_KEY[3];
-		for (i = 0; i < 10; ++i)
-			loop4 (i);
-		break;
+    switch (keyLen) {
+    case 16:
+        t = E_KEY[3];
+        for (i = 0; i < 10; ++i)
+            loop4 (i);
+        break;
 
-	case 24:
-		E_KEY[4] = uint32_in (pKey + 16);
-		t = E_KEY[5] = uint32_in (pKey + 20);
-		for (i = 0; i < 8; ++i)
-			loop6 (i);
-		break;
+    case 24:
+        E_KEY[4] = uint32_in (pKey + 16);
+        t = E_KEY[5] = uint32_in (pKey + 20);
+        for (i = 0; i < 8; ++i)
+            loop6 (i);
+        break;
 
-	case 32:
-		E_KEY[4] = uint32_in (pKey + 16);
-		E_KEY[5] = uint32_in (pKey + 20);
-		E_KEY[6] = uint32_in (pKey + 24);
-		t = E_KEY[7] = uint32_in (pKey + 28);
-		for (i = 0; i < 7; ++i)
-			loop8 (i);
-		break;
-	}
+    case 32:
+        E_KEY[4] = uint32_in (pKey + 16);
+        E_KEY[5] = uint32_in (pKey + 20);
+        E_KEY[6] = uint32_in (pKey + 24);
+        t = E_KEY[7] = uint32_in (pKey + 28);
+        for (i = 0; i < 7; ++i)
+            loop8 (i);
+        break;
+    }
 
-	D_KEY[0] = E_KEY[0];
-	D_KEY[1] = E_KEY[1];
-	D_KEY[2] = E_KEY[2];
-	D_KEY[3] = E_KEY[3];
+    D_KEY[0] = E_KEY[0];
+    D_KEY[1] = E_KEY[1];
+    D_KEY[2] = E_KEY[2];
+    D_KEY[3] = E_KEY[3];
 
-	for (i = 4; i < keyLen + 24; ++i) {
-		imix_col (D_KEY[i], E_KEY[i]);
-	}
+    for (i = 4; i < keyLen + 24; ++i) {
+        imix_col (D_KEY[i], E_KEY[i]);
+    }
 
-	return 0;
+    return 0;
 }
 
 /**
@@ -1013,39 +1026,39 @@ int crypto_aes_setKey(tCryptoAesCtx *pCtx, uint8 *pKey, uint16 keyLen)
  */
 void crypto_aes_encrypt(tCryptoAesCtx *pCtx, uint8 *pOut, uint8 *pIn)
 {
-	uint32 b0[4], b1[4];
-	const uint32 *kp = E_KEY + 4;
+    uint32 b0[4], b1[4];
+    const uint32 *kp = E_KEY + 4;
 
-	b0[0] = uint32_in (pIn     ) ^ E_KEY[0];
-	b0[1] = uint32_in (pIn +  4) ^ E_KEY[1];
-	b0[2] = uint32_in (pIn +  8) ^ E_KEY[2];
-	b0[3] = uint32_in (pIn + 12) ^ E_KEY[3];
+    b0[0] = uint32_in (pIn     ) ^ E_KEY[0];
+    b0[1] = uint32_in (pIn +  4) ^ E_KEY[1];
+    b0[2] = uint32_in (pIn +  8) ^ E_KEY[2];
+    b0[3] = uint32_in (pIn + 12) ^ E_KEY[3];
 
-	if (pCtx->keyLen > 24) {
-		f_nround (b1, b0, kp);
-		f_nround (b0, b1, kp);
-	}
+    if (pCtx->keyLen > 24) {
+        f_nround (b1, b0, kp);
+        f_nround (b0, b1, kp);
+    }
 
-	if (pCtx->keyLen > 16) {
-		f_nround (b1, b0, kp);
-		f_nround (b0, b1, kp);
-	}
+    if (pCtx->keyLen > 16) {
+        f_nround (b1, b0, kp);
+        f_nround (b0, b1, kp);
+    }
 
-	f_nround (b1, b0, kp);
-	f_nround (b0, b1, kp);
-	f_nround (b1, b0, kp);
-	f_nround (b0, b1, kp);
-	f_nround (b1, b0, kp);
-	f_nround (b0, b1, kp);
-	f_nround (b1, b0, kp);
-	f_nround (b0, b1, kp);
-	f_nround (b1, b0, kp);
-	f_lround (b0, b1, kp);
+    f_nround (b1, b0, kp);
+    f_nround (b0, b1, kp);
+    f_nround (b1, b0, kp);
+    f_nround (b0, b1, kp);
+    f_nround (b1, b0, kp);
+    f_nround (b0, b1, kp);
+    f_nround (b1, b0, kp);
+    f_nround (b0, b1, kp);
+    f_nround (b1, b0, kp);
+    f_lround (b0, b1, kp);
 
-	uint32_out ((pOut     ), b0[0]);
-	uint32_out ((pOut +  4), b0[1]);
-	uint32_out ((pOut +  8), b0[2]);
-	uint32_out ((pOut + 12), b0[3]);
+    uint32_out ((pOut     ), b0[0]);
+    uint32_out ((pOut +  4), b0[1]);
+    uint32_out ((pOut +  8), b0[2]);
+    uint32_out ((pOut + 12), b0[3]);
 }
 
 /**
@@ -1056,44 +1069,44 @@ void crypto_aes_encrypt(tCryptoAesCtx *pCtx, uint8 *pOut, uint8 *pIn)
  */
 void crypto_aes_decrypt(tCryptoAesCtx *pCtx, uint8 *pOut, uint8 *pIn)
 {
-	uint32 b0[4], b1[4];
-	const int keyLen = pCtx->keyLen;
-	const uint32 *kp = D_KEY + keyLen + 20;
+    uint32 b0[4], b1[4];
+    const int keyLen = pCtx->keyLen;
+    const uint32 *kp = D_KEY + keyLen + 20;
 
-	b0[0] = uint32_in (pIn     ) ^ E_KEY[keyLen + 24];
-	b0[1] = uint32_in (pIn +  4) ^ E_KEY[keyLen + 25];
-	b0[2] = uint32_in (pIn +  8) ^ E_KEY[keyLen + 26];
-	b0[3] = uint32_in (pIn + 12) ^ E_KEY[keyLen + 27];
+    b0[0] = uint32_in (pIn     ) ^ E_KEY[keyLen + 24];
+    b0[1] = uint32_in (pIn +  4) ^ E_KEY[keyLen + 25];
+    b0[2] = uint32_in (pIn +  8) ^ E_KEY[keyLen + 26];
+    b0[3] = uint32_in (pIn + 12) ^ E_KEY[keyLen + 27];
 
-	if (keyLen > 24) {
-		i_nround (b1, b0, kp);
-		i_nround (b0, b1, kp);
-	}
+    if (keyLen > 24) {
+        i_nround (b1, b0, kp);
+        i_nround (b0, b1, kp);
+    }
 
-	if (keyLen > 16) {
-		i_nround (b1, b0, kp);
-		i_nround (b0, b1, kp);
-	}
+    if (keyLen > 16) {
+        i_nround (b1, b0, kp);
+        i_nround (b0, b1, kp);
+    }
 
-	i_nround (b1, b0, kp);
-	i_nround (b0, b1, kp);
-	i_nround (b1, b0, kp);
-	i_nround (b0, b1, kp);
-	i_nround (b1, b0, kp);
-	i_nround (b0, b1, kp);
-	i_nround (b1, b0, kp);
-	i_nround (b0, b1, kp);
-	i_nround (b1, b0, kp);
-	i_lround (b0, b1, kp);
+    i_nround (b1, b0, kp);
+    i_nround (b0, b1, kp);
+    i_nround (b1, b0, kp);
+    i_nround (b0, b1, kp);
+    i_nround (b1, b0, kp);
+    i_nround (b0, b1, kp);
+    i_nround (b1, b0, kp);
+    i_nround (b0, b1, kp);
+    i_nround (b1, b0, kp);
+    i_lround (b0, b1, kp);
 
-	uint32_out ((pOut     ), b0[0]);
-	uint32_out ((pOut +  4), b0[1]);
-	uint32_out ((pOut +  8), b0[2]);
-	uint32_out ((pOut + 12), b0[3]);
+    uint32_out ((pOut     ), b0[0]);
+    uint32_out ((pOut +  4), b0[1]);
+    uint32_out ((pOut +  8), b0[2]);
+    uint32_out ((pOut + 12), b0[3]);
 }
 
 
-#define AES_CBC_DEBUG (1)
+#define AES_CBC_DEBUG (0)
 
 /**
  * Encrypt a sequence of data in CBC mode.
@@ -1102,8 +1115,9 @@ void crypto_aes_decrypt(tCryptoAesCtx *pCtx, uint8 *pOut, uint8 *pIn)
  * @param [in]  pIn    Plaintext buffer.
  * @param [in]  inLen  Plaintext length.
  * @param [in]  pIv    IV buffer.
+ * @returns  Bytes of the ciphertext.
  */
-void crypto_aes_cbc_encrypt(
+uint32 crypto_aes_cbc_encrypt(
     tCryptoAesCtx *pCtx,
     uint8         *pOut,
     uint8         *pIn,
@@ -1132,11 +1146,12 @@ void crypto_aes_cbc_encrypt(
         #endif
 
         // Encrypt the first Block length less than 16 bytes
-        util_xor(C, IV, P, inLen);
+        memcpy(C, IV, CRYPTO_AES_BLOCK_SIZE);
+        util_xor(C, C, P, inLen);
         crypto_aes_encrypt(pCtx, C, C);
         #if (AES_CBC_DEBUG)
         printf("C\n");
-        util_dump(C, inLen);
+        util_dump(C, CRYPTO_AES_BLOCK_SIZE);
         #endif
     }
     else
@@ -1188,6 +1203,8 @@ void crypto_aes_cbc_encrypt(
             }
         }
     }
+
+    return (CRYPTO_AES_BLOCK_SIZE * n);
 }
 
 /**
@@ -1197,8 +1214,9 @@ void crypto_aes_cbc_encrypt(
  * @param [in]  pIn    Ciphertext buffer.
  * @param [in]  inLen  Ciphertext length.
  * @param [in]  pIv    IV buffer.
+ * @returns  Bytes of the plaintext.
  */
-void crypto_aes_cbc_decrypt(
+uint32 crypto_aes_cbc_decrypt(
     tCryptoAesCtx *pCtx,
     uint8         *pOut,
     uint8         *pIn,
@@ -1233,7 +1251,7 @@ void crypto_aes_cbc_decrypt(
         util_xor(P, IV, P, CRYPTO_AES_BLOCK_SIZE);
         #if (AES_CBC_DEBUG)
         printf("P\n");
-        util_dump(P, inLen);
+        util_dump(P, CRYPTO_AES_BLOCK_SIZE);
         #endif
     }
     else
@@ -1255,10 +1273,10 @@ void crypto_aes_cbc_decrypt(
                 util_dump(P, CRYPTO_AES_BLOCK_SIZE);
                 #endif
 
-                util_xor(P, IV, P, r);
+                util_xor(P, IV, P, CRYPTO_AES_BLOCK_SIZE);
                 #if (AES_CBC_DEBUG)
                 printf("Pn\n");
-                util_dump(P, r);
+                util_dump(P, CRYPTO_AES_BLOCK_SIZE);
                 #endif
             }
             else
@@ -1282,17 +1300,7 @@ void crypto_aes_cbc_decrypt(
             }
         }
     }
-}
 
-/**
- * Initialize AES.
- */
-void crypto_aes_init(void)
-{
-    /* using static table */
-    #if 0
-    _genTables();
-    CRYTPO_LOG("AES: generate the static table\n");
-    #endif
+    return (CRYPTO_AES_BLOCK_SIZE * n);
 }
 

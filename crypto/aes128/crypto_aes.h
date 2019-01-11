@@ -44,6 +44,11 @@ typedef struct _tCryptoAesCtx {
 // /////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Initialize AES.
+ */
+void crypto_aes_init(void);
+
+/**
  * Set the key for AES context.
  * @param [in]  pCtx    A @ref tCryptoAesCtx object.
  * @param [in]  pKey    Key value.
@@ -75,8 +80,9 @@ void crypto_aes_decrypt(tCryptoAesCtx *pCtx, uint8 *pOut, uint8 *pIn);
  * @param [in]  pIn    Plaintext buffer.
  * @param [in]  inLen  Plaintext length.
  * @param [in]  pIv    IV buffer.
+ * @returns  Bytes of the ciphertext.
  */
-void crypto_aes_cbc_encrypt(
+uint32 crypto_aes_cbc_encrypt(
     tCryptoAesCtx *pCtx,
     uint8         *pOut,
     uint8         *pIn,
@@ -91,19 +97,15 @@ void crypto_aes_cbc_encrypt(
  * @param [in]  pIn    Ciphertext buffer.
  * @param [in]  inLen  Ciphertext length.
  * @param [in]  pIv    IV buffer.
+ * @returns  Bytes of the plaintext.
  */
-void crypto_aes_cbc_decrypt(
+uint32 crypto_aes_cbc_decrypt(
     tCryptoAesCtx *pCtx,
     uint8         *pOut,
     uint8         *pIn,
     uint32         inLen,
     uint8         *pIv
 );
-
-/**
- * Initialize AES.
- */
-void crypto_aes_init(void);
 
 
 #endif // _CRYPTO_AES_H_

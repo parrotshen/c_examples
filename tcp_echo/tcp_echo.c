@@ -129,6 +129,12 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    if (0 == port)
+    {
+        printf("ERR: incorrect port number 0\n");
+        return -1;
+    }
+
     for (i=0; i<MAX_SOCKET_NUM; i++)
     {
         g_socket[i].fd = -1;
@@ -213,9 +219,13 @@ int main(int argc, char *argv[])
                     {
                         perror( "accept" );
                     }
+                    else if (fd_client >= MAX_SOCKET_NUM)
+                    {
+                        printf("ERR: fd > %d\n", MAX_SOCKET_NUM);
+                        close( fd_client );
+                    }
                     else
                     {
-                        
                         g_socket[fd_client].fd = fd_client;
                         g_socket[fd_client].addr = addr_client;
                         g_socket[fd_client].addr_len = addr_len_client;

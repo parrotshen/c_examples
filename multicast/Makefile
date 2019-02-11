@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall
 
-APPS = multicast_send multicast_recv mgroup
+APPS = multicast_send multicast_recv multicast_group
 
 all: $(APPS)
 
@@ -11,7 +11,7 @@ multicast_send: multicast_send.o
 multicast_recv: multicast_recv.o
 	$(CC) $(CFLAGS) $< -o $@
 
-mgroup: mgroup.o
+multicast_group: multicast_group.o
 	$(CC) $(CFLAGS) $< -o $@
 
 %.o: %.c

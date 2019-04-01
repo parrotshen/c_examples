@@ -1,54 +1,67 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
 #include <unistd.h>
+#include <sys/time.h>
+#include <time.h>
 
 
-void get_random_bytes(unsigned char *p, int len)
+int random_number(int min, int max)
 {
-    int i;
+    struct timeval tv;
+    int retval = 0;
+    int delta;
 
-    srand( (int)time(0) );
-    for (i=0; i<len; i++)
+    delta = (max - min);
+    if (delta > 0)
     {
-        p[i] = (unsigned char)(256.0*rand() / (RAND_MAX));
+        gettimeofday(&tv, NULL);
+
+        srand( (unsigned int)tv.tv_usec );
+
+        /* get a random number between min and max */
+        retval = ((rand() % (delta + 1)) + min);
     }
+
+    return retval;
 }
 
 int main(int argc, char *argv[])
 {
-    unsigned char buffer[1024];
-    int length = 0;
+    int begin  = 0;
+    int end    = 1;
+    int number = 1;
     int i;
-    int j;
+    int r;
 
-    if (argc != 2)
+
+    if (argc > 3)
     {
-        printf("Usage: %s <length>\n", argv[0]);
-        return -1;
+        begin  = atoi( argv[1] );
+        end    = atoi( argv[2] );
+        number = atoi( argv[3] );
+    }
+    else if (argc > 2)
+    {
+        begin  = atoi( argv[1] );
+        end    = atoi( argv[2] );
+    }
+    else
+    {
+        printf("Usage: random BEGIN END [NUMBER]\n");
+        printf("\n");
+        return 0;
     }
 
-    length = atoi(argv[1]);
-    if (length > 1024) length = 1024;
 
-    //srand( (int)time(0) );
+    printf("RAND_MAX = %d (%Xh)\n\n", RAND_MAX, RAND_MAX);
 
-    for (j=0; j<3; j++)
+    for (i=0; i<number; i++)
     {
-        get_random_bytes(buffer, length);
-        for (i=0; i<length; i++)
-        {
-            if ((i != 0) && ((i % 16) == 0))
-            {
-                printf("\n");
-            }
-            printf("%02X ", buffer[i]);
-        }
-        printf("\n\n");
-
-        sleep(1);
+        r = random_number(begin, end);
+        printf("%d\n", r);
     }
+    printf("\n");
+
 
     return 0;
 }

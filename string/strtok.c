@@ -30,13 +30,13 @@ int main(void)
     printf("%s\n\n", g_string);
 
     printf("[3] extract tokens:\n");
-    printf("%\n");
+    printf("\n");
     while ( token )
     {
         printf("\"%s\"\n", token);
         token = strtok(NULL, g_delmit);
     }
-    printf("%\n");
+    printf("\n");
     printf("\n");
 
     return 0;

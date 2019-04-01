@@ -29,16 +29,8 @@ int Random(int min, int max)
 
     gettimeofday(&tv, NULL);
 
-    srand( (int)tv.tv_usec );
-    val = (int)(256.0 * rand() / (RAND_MAX));
-    if (0 == min)
-    {
-        val = (val % (max + 1));
-    }
-    else
-    {
-        val = (val % max) + min;
-    }
+    srand( (unsigned int)tv.tv_usec );
+    val = ((rand() % (max - min + 1)) + min);
 
     return val;
 }
@@ -62,7 +54,7 @@ void AddWallList(int indexC)
             new = 1;
             for (w=0; w<WallNum; w++)
             {
-               /* already in the wall list */
+               /* Already in the wall list */
                if (Wall[w] == indexW)
                {
                   new = 0;
@@ -195,7 +187,7 @@ void Draw(void)
 
 int main(int argc, char *argv[])
 {
-    int debug = 0;
+    int verbose = 0;
     int indexU, indexD;
     int indexL, indexR;
     int indexC;
@@ -207,7 +199,7 @@ int main(int argc, char *argv[])
 
     if (argc > 1)
     {
-        debug = 1;
+        verbose = 1;
     }
 
     Reset();
@@ -269,7 +261,6 @@ int main(int argc, char *argv[])
            y = Y[indexW] + NeighY[3];
            indexR = (x + (y * MAZE_COL));
 
-           //if ((x > 0) && (x < 16) && (y > 0) && (y < 12))
            if ((Cells[indexU] != 'B') && (Cells[indexD] != 'B'))
            {
               if ((Cells[indexU] == 0x20) && (Cells[indexD] == 0x20))
@@ -324,7 +315,7 @@ int main(int argc, char *argv[])
            printf("ERR: Wall[%d] = 0\n", w);
         }
 
-        if ( debug )
+        if ( verbose )
         {
             Draw();
         }

@@ -26,6 +26,6 @@ int main(int argc, char *argv[])
     printf("tm_wday = %d\n", nPtr->tm_wday);         /* 0 ~ 6 */
     printf("tm_yday = %d\n", nPtr->tm_yday + 1);     /* 0 ~ 365 */
     
-	return 0;
+    return 0;
 }
 

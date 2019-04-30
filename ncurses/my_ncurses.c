@@ -15,9 +15,9 @@ int init_conio(void)
         return -1;
     }
 
-	keypad(stdscr, TRUE);
+    keypad(stdscr, TRUE);
 
-	noecho();
+    noecho();
 
     return 0;
 }
@@ -73,9 +73,9 @@ int main(int argc, char *argv[])
 
         gotoxy(x, y);
 
-		attron( A_STANDOUT );
+        attron( A_STANDOUT );
         printw("Hello, world!\n");
-		attroff( A_STANDOUT );
+        attroff( A_STANDOUT );
         refresh();
 
         sleep(1);

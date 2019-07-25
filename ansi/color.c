@@ -9,14 +9,14 @@
 #define ANSI_FG_CYAN     "\033[1;36m"
 #define ANSI_FG_WHITE    "\033[1;37m"
 
-#define ANSI_BG_BLACK    "\033[1;40m"
-#define ANSI_BG_RED      "\033[1;41m"
-#define ANSI_BG_GREEN    "\033[1;42m"
-#define ANSI_BG_YELLOW   "\033[1;43m"
-#define ANSI_BG_BLUE     "\033[1;44m"
-#define ANSI_BG_MAGENTA  "\033[1;45m"
-#define ANSI_BG_CYAN     "\033[1;46m"
-#define ANSI_BG_WHITE    "\033[1;47m"
+#define ANSI_BG_BLACK    "\033[37;40m"
+#define ANSI_BG_RED      "\033[30;41m"
+#define ANSI_BG_GREEN    "\033[30;42m"
+#define ANSI_BG_YELLOW   "\033[30;43m"
+#define ANSI_BG_BLUE     "\033[30;44m"
+#define ANSI_BG_MAGENTA  "\033[30;45m"
+#define ANSI_BG_CYAN     "\033[30;46m"
+#define ANSI_BG_WHITE    "\033[30;47m"
 
 #define ANSI_OFF         "\033[0m"
 

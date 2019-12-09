@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 
 #define BOOL_FALSE  0
@@ -253,6 +254,34 @@ void test_alignment(void)
             pBuf[(i * 4) + 3]
         );
     }
+    printf("\n\n");
+}
+
+void test_speed(void)
+{
+    struct timeval start, end;
+    unsigned int delta;
+    unsigned int i;
+
+    gettimeofday(&start, NULL);
+    for (i=0; i<1000000; i++);
+    gettimeofday(&end, NULL);
+
+    delta = (((end.tv_sec   * 1000000LL) + end.tv_usec) -
+             ((start.tv_sec * 1000000LL) + start.tv_usec));
+
+    printf("Run for-loop %u ==> %u usec\n", i, delta);
+    printf("\n");
+    printf(
+        "start time: %u.%u\n",
+        (unsigned int)start.tv_sec,
+        (unsigned int)start.tv_usec
+    );
+    printf(
+        "end   time: %u.%u\n",
+        (unsigned int)end.tv_sec,
+        (unsigned int)end.tv_usec
+    );
     printf("\n");
 }
 
@@ -266,6 +295,9 @@ int main(int argc, char *argv[])
 
     printf("[30;47m[C] test the memory alignment         [0m\n\n");
     test_alignment();
+
+    printf("[30;47m[D] test the CPU speed                [0m\n\n");
+    test_speed();
 
     return 0;
 }

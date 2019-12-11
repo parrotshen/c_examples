@@ -337,7 +337,7 @@ void help(void)
     printf("\n");
     printf("  -i IP     IP address.\n");
     printf("  -t type   ICMP type.\n");
-    printf("               0: ECHO REQPLY\n");
+    printf("               0: ECHO REPLY\n");
     printf("               3: DESTINATION UNREACHABLE\n");
     printf("               4: SOURCE QUENCH\n");
     printf("               5: REDIRECT MESSAGE\n");

@@ -294,9 +294,9 @@ void test_speed(void)
     target = (((t1.tv_sec * 1000000LL) + t1.tv_usec) + interval);
     do
     {
+        count++;
         gettimeofday(&t2, NULL);
         current = ((t2.tv_sec * 1000000LL) + t2.tv_usec);
-        count++;
     } while (current < target);
 
     printf("Run while-loop %u times during %u usec\n", count, interval);

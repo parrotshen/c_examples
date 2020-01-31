@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 int main(int argc, char *argv[])
@@ -14,7 +15,16 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    t = (time_t)atoi( argv[1] );
+    if ((strlen(argv[1]) > 2) &&
+        (argv[1][0] == '0') && (argv[1][1] == 'x'))
+    {
+        sscanf(argv[1], "0x%lx", &t);
+    }
+    else
+    {
+        t = (time_t)atoi( argv[1] );
+    }
+
     nPtr = gmtime( &t );
 
     printf("tm_sec  = %d\n", nPtr->tm_sec);          /* 0 ~ 59 */

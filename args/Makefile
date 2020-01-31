@@ -1,6 +1,9 @@
 CC = gcc
 
-all: arg_getopt arg_number arg_format arg_print arg_busybox
+all: arg_array arg_getopt arg_number arg_format arg_print arg_busybox arg_subroutine
+
+arg_array: arg_array.c
+	$(CC) -Wall $< -o $@
 
 arg_getopt: arg_getopt.c
 	$(CC) -Wall $< -o $@
@@ -22,6 +25,9 @@ arg_busybox: arg_busybox.c
 	@ln -sf arg_busybox rm
 	@ln -sf arg_busybox cat
 
+arg_subroutine: arg_subroutine.c
+	$(CC) -Wall $< -o $@
+
 clean:
-	rm -f arg_getopt arg_number arg_format arg_print arg_busybox
+	rm -f arg_array arg_getopt arg_number arg_format arg_print arg_busybox arg_subroutine
 	rm -f ps ls cp rm cat

@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     *p = 456;
     printf("[ %d ]\n", *p);
 
-    /* try to access an invalid address */
+    /* try to access a non-alignment address */
     p = (int *)&(g_number[1]);
     printf("p -> %p ", p);
     *p = 789;

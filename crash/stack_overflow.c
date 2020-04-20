@@ -4,23 +4,32 @@
 #include <unistd.h>
 
 
-void stack_overflow(int n, int size)
+size_t stack_top;
+
+size_t stack_size(void)
 {
+    int y = 0;
+    return (stack_top - (size_t)&y);
+}
+
+void stack_overflow(int n)
+{
+    /* each call will consume 4000000+ bytes stack memory */
     int array[1000000];
-    int seq;
-    int acc;
 
-    seq = (n + 1);
-    acc = (size + sizeof(array));
+    printf("%d) stack size %d\n", n, stack_size());
 
-    printf("%d) stack size %d\n", seq, acc);
-
-    stack_overflow(seq, acc);
+    stack_overflow(n + 1);
 }
 
 int main(int argc, char *argv[])
 {
-    stack_overflow(0, 0);
+    int x = 0;
+
+    /* find the address of stack top */
+    stack_top = (size_t)&x;
+
+    stack_overflow( 1 );
 
     return 0;
 }

@@ -19,6 +19,8 @@ void stack_overflow(int n)
 
     printf("%d) stack size %d\n", n, stack_size());
 
+    array[0] = n;
+
     stack_overflow(n + 1);
 }
 

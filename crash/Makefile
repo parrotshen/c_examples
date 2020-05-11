@@ -3,8 +3,11 @@ CC = gcc
 APPS  = segment_fault
 APPS += stack_overflow
 APPS += buffer_overflow
+APPS += array_index_exceed
 APPS += bus_error
-APPS += free_error
+APPS += free_invalid_pointer
+APPS += double_free
+APPS += free_invalid_next_size
 APPS += out_of_memory
 APPS += divide_by_zero
 APPS += variable_lifetime
@@ -21,10 +24,19 @@ stack_overflow: stack_overflow.c
 buffer_overflow: buffer_overflow.c
 	$(CC) -Wall $< -o $@
 
+array_index_exceed: array_index_exceed.c
+	$(CC) -Wall $< -o $@
+
 bus_error: bus_error.c
 	$(CC) -Wall $< -o $@
 
-free_error: free_error.c
+free_invalid_pointer: free_invalid_pointer.c
+	$(CC) -Wall $< -o $@
+
+double_free: double_free.c
+	$(CC) -Wall $< -o $@
+
+free_invalid_next_size: free_invalid_next_size.c
 	$(CC) -Wall $< -o $@
 
 out_of_memory: out_of_memory.c

@@ -34,28 +34,9 @@ void dump(const void *addr, unsigned int size)
 int main(int argc, char *argv[])
 {
     char *p = NULL;
-    int test = 0;
 
-    if (argc > 1) test = atoi( argv[1] );
-
-    /*** glibc detected *** ./free_error: free(): invalid next size (fast): 0x0955d008 ***/
-    if (0 == test)
-    {
-        p = malloc( 8 );
-        dump(p, 256);
-
-        // write the memory buffer > 8 bytes
-        strncpy(p, "abcdefghijklmnopqrstuvwxyz", 256);
-        printf("p = %s\n", p);
-
-        // error was happened
-        free( p );
-    }
     /*** glibc detected *** ./free_error: double free or corruption (fasttop): 0x08648008 ***/
-    else
     {
-        char *p = NULL;
-
         p = malloc( 16 );
         memset(p, 0x5a, 16);
         printf("malloc %p\n", p);

@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
     bit_get_data(g_buf, 19, data, bytes);
     printf(
-        " offset 19, bytes 2, data %02x%02x\n",
+        " offset 19, bytes 2, data 0x%02x%02x\n",
         data[0],
         data[1]
     );
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
             bytes
         );
         printf(
-            "[%d] offset %d, bytes %d, data %02x%02x\n",
+            "[%d] offset %d, bytes %d, data 0x%02x%02x\n",
             (i + 1),
             g_pattern[i][1][0],
             bytes,

@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
     value = 0xCAFE;
     bits = 16;
 
-    printf("offset %d, value %x, bits %d\n", offset, value, bits);
+    printf("offset %d, value 0x%x, bits %d\n", offset, value, bits);
 
     memset(g_buf, 0xFF, 256);
 

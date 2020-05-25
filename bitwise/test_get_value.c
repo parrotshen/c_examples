@@ -202,12 +202,35 @@ int main(int argc, char *argv[])
 
         bit_dump_color(g_buf, 32, offset, bits);
         value = bit_get_uint32(g_buf, offset, bits);
-        printf("offset %d, bits %d, value %x\n", offset, bits, value);
+        printf("offset %d, bits %d, value 0x%x\n", offset, bits, value);
 
         return 0;
     }
 
 
+#if 0
+    /*
+     * 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111
+     *                             1 1001 0101 1111 110
+     *    F    F    F    F    F    F    9    5    F    B
+     */
+    g_buf[0] = 0xf0;
+    g_buf[1] = 0x33;
+    g_buf[2] = 0x6c;
+    g_buf[3] = 0x95;
+    g_buf[4] = 0xe6;
+    g_buf[5] = 0xc8;
+    g_buf[6] = 0x4a;
+    g_buf[7] = 0xf1;
+    offset = 23;
+    bits = 16;
+
+    bit_dump_color(g_buf, 8, offset, bits);
+    bit_dump(g_buf, 8, 1);
+
+    value = bit_get_uint32(g_buf, offset, bits);
+    printf("offset %d, bits %d, value 0x%x\n", offset, bits, value);
+#else
     for (i=0; i<42; i++)
     {
         value = bit_get_uint32(
@@ -216,7 +239,7 @@ int main(int argc, char *argv[])
                     g_pattern[i][1][1]
                 );
         printf(
-            "[%d] offset %d, bits %d, value %x\n",
+            "[%d] offset %d, bits %d, value 0x%x\n",
             (i + 1),
             g_pattern[i][1][0],
             g_pattern[i][1][1],
@@ -224,6 +247,7 @@ int main(int argc, char *argv[])
         );
         bit_dump(g_pattern[i][0], 8, 1);
     }
+#endif
 
 
     return 0;

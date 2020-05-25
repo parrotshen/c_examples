@@ -15,6 +15,28 @@ int main(int argc, char *argv[])
     int i;
 
 
+#if 0
+    g_buf[0] = 0x88;
+    g_buf[1] = 0x0E;
+    g_buf[2] = 0x75;
+    g_buf[3] = 0x5A;
+    g_buf[4] = 0xB1;
+    g_buf[5] = 0x84;
+    g_buf[6] = 0x02;
+    g_buf[7] = 0x03;
+
+    data[0] = 0x2c;
+    data[1] = 0xe6;
+
+    bit_set_data(g_buf, 19, data, bytes);
+    printf(
+        " offset 19, bytes 2, data 0x%02x%02x\n",
+        data[0],
+        data[1]
+    );
+    bit_dump_color(g_buf, 8, 19, 16);
+    bit_dump(g_buf, 8, 1);
+#else
     for (i=0; i<7; i++)
     {
         printf(
@@ -29,6 +51,7 @@ int main(int argc, char *argv[])
         bit_set_data(g_buf, g_offset[i], data, bytes);
         bit_dump(g_buf, 8, 1);
     }
+#endif
 
 
     return 0;

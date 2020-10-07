@@ -32,7 +32,12 @@
 #define PAGEMAP_LENGTH  (8)
 #define PAGE_SHIFT      (12)
 
-char string[] = "Hello world !!\n";
+char g_string[] = "Hello world !!\n";
+
+void *get_ebp(void)
+{
+    asm("mov (%ebp), %eax");
+}
 
 uintptr_t vtop(uintptr_t vaddr)
 {
@@ -116,6 +121,7 @@ int main(int argc, char *argv[])
     uintptr_t addr5;
     uintptr_t addr6;
     uintptr_t addr7;
+    uintptr_t addr8;
     int verbose = 0;
     int hold = 0;
     char command[80];
@@ -135,18 +141,18 @@ int main(int argc, char *argv[])
         addr1 = vtop( (uintptr_t)main );
         addr2 = vtop( (uintptr_t)printf );
 
-        printf("main()   -> %p (%p)\n", main, (void *)addr1);
         printf("printf() -> %p (%p)\n", printf, (void *)addr2);
+        printf("main()   -> %p (%p)\n", main, (void *)addr1);
         dump(main, 32, verbose);
     }
 
 
     printf("[2] Initialized data segment\n");
     {
-        addr3 = vtop( (uintptr_t)string );
+        addr3 = vtop( (uintptr_t)g_string );
 
-        printf("string   -> %p (%p)\n", string, (void *)addr3);
-        dump(string, sizeof(string), verbose);
+        printf("g_string -> %p (%p)\n", g_string, (void *)addr3);
+        dump(g_string, sizeof(g_string), verbose);
     }
 
 
@@ -182,17 +188,19 @@ int main(int argc, char *argv[])
     printf("[5] Stack\n");
     {
         addr6 = vtop( (uintptr_t)&addr1 );
+        addr7 = vtop( (uintptr_t)get_ebp() );
 
         printf("&addr1   -> %p (%p)\n", &addr1, (void *)addr6);
+        printf("EBP      -> %p (%p)\n", get_ebp(), (void *)addr7);
         dump(&addr1, 16, verbose);
     }
 
 
     printf("[6] Environment\n");
     {
-        addr7 = vtop( (uintptr_t)&argc );
+        addr8 = vtop( (uintptr_t)&argc );
 
-        printf("&argc    -> %p (%p)\n", &argc, (void *)addr7);
+        printf("&argc    -> %p (%p)\n", &argc, (void *)addr8);
         dump(&argc, 16, verbose);
     }
 

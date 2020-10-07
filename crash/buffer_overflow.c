@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-void dump(const void *addr, unsigned int size)
+#define PT_SIZE sizeof(void *)
+
+void dump(char *name, void *addr, unsigned int offset, unsigned int size)
 {
-    unsigned char *p = (unsigned char *)addr;
+    unsigned char *p = (addr + offset);
     unsigned int   i;
 
     if (p == NULL)
@@ -15,14 +17,18 @@ void dump(const void *addr, unsigned int size)
 
     for (i=0; i<size; i++)
     {
-        if ((i != 0) && ((i % 16) == 0))
+        if ((i != 0) && ((i % PT_SIZE) == 0))
         {
+            if ((p + i - PT_SIZE) == addr)
+            {
+                printf(" <- %s", name);
+            }
             printf("\n");
         }
 
-        if ((i % 16) == 0)
+        if ((i % PT_SIZE) == 0)
         {
-            printf("%08x :", (int)(p + i));
+            printf("%08lx :", (unsigned long)(p + i));
         }
         printf(" %02x", p[i]);
     }
@@ -36,17 +42,23 @@ void print(char *string)
     char buffer[8];
 
     // access over the size of buffer
-    sprintf(buffer, "%s: %s", __func__, string);
+    #if 0
+    strncpy(buffer, string, 7);
+    buffer[7] = 0;
+    #else
+    strcpy(buffer, string);
+    #endif
 
-    dump((buffer - 16), 64);
+    dump("buffer", buffer, -16, 64);
 
-    // cause segmentation fault
     printf("%s\n", buffer);
+
+    // segmentation fault due to the incorrect return address
 }
 
 int main(void)
 {
-    print( "0123456789" );
+    print( "This string is too long !" );
 
     return 0;
 }

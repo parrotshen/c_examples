@@ -5,7 +5,7 @@ SIZE = $(CROSS)size
 OBJDUMP = $(CROSS)objdump
 
 
-all: hello test memory
+all: hello test memory stack
 
 hello: hello.o
 	@echo "[BUILD] $@"
@@ -34,10 +34,18 @@ memory: memory.c
 	$(SIZE) $@
 	@echo
 
+stack: stack.c
+	@echo "[BUILD] $@"
+	$(CC) -Wall -m32 -g $< -o $@
+	$(OBJDUMP) -S stack > stack.asm
+	$(OBJDUMP) -s stack > stack.sec
+	@echo
+
 
 clean:
 	rm -f hello hello.o hello.sym hello.asm hello.arch
 	rm -f test
 	rm -f memory
+	rm -f stack
 
-.PHONY: hello test memory
+.PHONY: hello test memory stack

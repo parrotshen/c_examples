@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
     {
         perror( "setuid (root)" );
     }
+    printf("Who am I?\n");
     system( "whoami" );
     printf("\n");
 
@@ -21,6 +22,7 @@ int main(int argc, char *argv[])
     {
         perror( "setuid (user)" );
     }
+    printf("Who am I?\n");
     system( "whoami" );
     printf("\n");
 

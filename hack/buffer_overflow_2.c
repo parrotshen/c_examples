@@ -3,14 +3,30 @@
 #include <string.h>
 
 
+// /////////////////////////////////////////////////////////////////////////////
+//    Macro declarations
+// /////////////////////////////////////////////////////////////////////////////
+
 #define PT_SIZE sizeof(void *)
 
+// /////////////////////////////////////////////////////////////////////////////
+//    Type declarations
+// /////////////////////////////////////////////////////////////////////////////
+
+
+// /////////////////////////////////////////////////////////////////////////////
+//    Variables declarations
+// /////////////////////////////////////////////////////////////////////////////
 
 /*
  * Let EIP change to here after hello() returns.
  */
 char g_callESP[] = "\xFF\xD4"; /* call *%esp */
 
+
+// /////////////////////////////////////////////////////////////////////////////
+//    Functions
+// /////////////////////////////////////////////////////////////////////////////
 
 void dump_stack(void *pEBP, int offset, int size)
 {
@@ -80,15 +96,16 @@ void hello(const char *input)
 
     if ( input )
     {
-        /* Buffer overflow while input length > 4 */
+        /* Buffer overflow while input length > 8 */
         strcpy((char *)buf, input);
     }
 
     printf("%s()\n", __func__);
+    printf("\"%s\"\n", buf);
     printf(" %p :: %08lx  input\n", &input, (unsigned long)input);
     printf(" %p :: %08lx  EBP\n", EBP, *((unsigned long *)EBP));
     printf(" %p :: %02x%02x%02x%02x  buf\n", &(buf[0]), buf[3], buf[2], buf[1], buf[0]);
-    printf(" %p :: %02x%02x%02x%02x\n", &(buf[4]), buf[7], buf[8], buf[9], buf[4]);
+    printf(" %p :: %02x%02x%02x%02x\n", &(buf[4]), buf[7], buf[6], buf[5], buf[4]);
     printf(" %p :: %08lx  ESP\n", ESP, *((unsigned long *)ESP));
     printf("\n");
 

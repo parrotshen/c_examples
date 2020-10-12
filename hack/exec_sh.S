@@ -19,6 +19,11 @@ _start:
     movl    $0xfffffffb, %eax
     xor     $0xfffffff0, %eax
     int     $0x80
+
+# sys_exit:
+#   %eax  %ebx
+#    1     code
+    xor     %ebx, %ebx
     movl    $0xfffffff1, %eax
     xor     $0xfffffff0, %eax
     int     $0x80

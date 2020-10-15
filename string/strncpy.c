@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define TEXT  "Hello World"
+#define TEXT_1  "Hello World"
+#define TEXT_2  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 /*
  * char *strncpy(
@@ -26,12 +27,20 @@ void dump(char *label, void *addr, int size)
     {
         if (byte[i] == 0x00)
         {
-            printf(" \\n");
+            printf(" \\0");
             break;
         }
         else if (byte[i] == 0xff)
         {
             break;
+        }
+        else if (byte[i] == 0x0a)
+        {
+            printf(" \\n");
+        }
+        else if (byte[i] == 0x0d)
+        {
+            printf(" \\r");
         }
         else if (byte[i] == 0x20)
         {
@@ -51,12 +60,20 @@ int main(void)
     char buf[16];
 
     memset(buf, 0xff, 16);
-    strcpy(buf, TEXT);
-    dump("strcpy()", buf, 16);
+    strcpy(buf, TEXT_1);
+    dump("strcpy(dst, src)", buf, 16);
 
     memset(buf, 0xff, 16);
-    strncpy(buf, TEXT, 5);
-    dump("strncpy()", buf, 16);
+    strncpy(buf, TEXT_1, 5);
+    dump("strncpy(dst, src, 5)", buf, 16);
+
+    memset(buf, 0xff, 16);
+    strncpy(buf, TEXT_1, 16);
+    dump("strncpy(dst, src, 16)", buf, 16);
+
+    memset(buf, 0xff, 16);
+    strncpy(buf, TEXT_2, 16);
+    dump("strncpy(dst, src, 16)", buf, 16);
 
     return 0;
 }

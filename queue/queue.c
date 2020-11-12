@@ -1,28 +1,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <pthread.h>
+#include "queue.h"
 
-#define MAX_QUEUE  8
-#define DATA_SIZE  1024
 
-typedef struct _tElement
-{
-    unsigned char  data[DATA_SIZE];
-    unsigned int   size;
-} tElement;
+// /////////////////////////////////////////////////////////////////////////////
+//    Macro declarations
+// /////////////////////////////////////////////////////////////////////////////
+
+#define MAX_QUEUE 8
+
+
+// /////////////////////////////////////////////////////////////////////////////
+//    Type declarations
+// /////////////////////////////////////////////////////////////////////////////
 
 typedef struct _tQueue
 {
     pthread_mutex_t  lock;
     unsigned short   get;
     unsigned short   put;
-    tElement        *pElement[MAX_QUEUE];
+    void            *pElement[MAX_QUEUE];
 } tQueue;
 
-static tQueue  _queue;
 
+// /////////////////////////////////////////////////////////////////////////////
+//    Variables declarations
+// /////////////////////////////////////////////////////////////////////////////
+
+static tQueue _queue;
+
+
+// /////////////////////////////////////////////////////////////////////////////
+//    Functions
+// /////////////////////////////////////////////////////////////////////////////
 
 void queue_init(void)
 {
@@ -43,7 +54,7 @@ void queue_init(void)
 
 void queue_cleanup(void)
 {
-    unsigned int  i;
+    int i;
 
     for (i=0; i<MAX_QUEUE; i++)
     {
@@ -58,9 +69,9 @@ void queue_cleanup(void)
     _queue.put = 0;
 }
 
-void queue_put(tElement *pElement)
+void queue_put(void *pElement)
 {
-    unsigned short  next;
+    unsigned short next;
 
     pthread_mutex_lock( &_queue.lock );
 
@@ -75,7 +86,7 @@ void queue_put(tElement *pElement)
 
     if ( _queue.pElement[next] )
     {
-        printf("%s: pElement[%d] is not NULL\n", __func__, next);
+        printf("%s: pElement[%u] is not NULL\n", __func__, next);
         free( _queue.pElement[next] );
     }
     _queue.pElement[next] = pElement;
@@ -85,10 +96,10 @@ void queue_put(tElement *pElement)
     pthread_mutex_unlock( &_queue.lock );
 }
 
-tElement *queue_get(void)
+void *queue_get(void)
 {
-    tElement *pElement = NULL;
-    unsigned short  next;
+    void *pElement = NULL;
+    unsigned short next;
 
     pthread_mutex_lock( &_queue.lock );
 
@@ -112,9 +123,9 @@ tElement *queue_get(void)
     return pElement;
 }
 
-unsigned int queue_elements(void)
+int queue_elements(void)
 {
-    unsigned int  number = 0;
+    int number = 0;
 
     pthread_mutex_lock( &_queue.lock );
 
@@ -133,11 +144,11 @@ unsigned int queue_elements(void)
     return number;
 }
 
-void queue_dump(void)
+void queue_dump(tQueueDump pFunc)
 {
-    unsigned int  next;
-    unsigned int  number;
-    unsigned int  i;
+    int next;
+    int number;
+    int i;
 
     number = queue_elements();
     printf("Queue element number = %d\n", number);
@@ -147,81 +158,12 @@ void queue_dump(void)
     next = ((_queue.get + 1) % MAX_QUEUE);
     for (i=0; i<number; i++)
     {
-       printf("[%u] ", next);
-       if ( _queue.pElement[next] )
-       {
-           printf("%s", (char *)_queue.pElement[next]->data);
-       }
-       printf("\n");
-       next = ((next + 1) % MAX_QUEUE);
+        pFunc(_queue.pElement[next], next);
+        next = ((next + 1) % MAX_QUEUE);
     }
 
     pthread_mutex_unlock( &_queue.lock );
 
     printf("\n");
-}
-
-int main(int argc, char *argv[])
-{
-    tElement *pElement = NULL;
-    char  buf[256];
-    int   size;
-
-    queue_init();
-
-    while (1)
-    {
-        size = read(STDIN_FILENO, buf, 255);
-        buf[size] = '\0';
-
-        if (strlen(buf) > 0)
-        {
-            buf[strlen(buf) - 1] = '\0';
-
-            if (0 == strcmp("exit", buf))
-            {
-                break;
-            }
-            else if (0 == strcmp("help", buf))
-            {
-                printf("exit: terminate program\n");
-                printf("show: dump queue\n");
-                printf("get : de-queue\n");
-                printf("put : en-queue (null)\n");
-                printf("\n");
-            }
-            else if (0 == strcmp("show", buf))
-            {
-                queue_dump();
-            }
-            else if (0 == strcmp("get", buf))
-            {
-                pElement = queue_get();
-                if ( pElement )
-                {
-                    printf("%s\n\n", (char *)pElement->data);
-                    free( pElement );
-                }
-            }
-            else if (0 == strcmp("put", buf))
-            {
-                queue_put( NULL );
-            }
-            else
-            {
-                pElement = malloc( sizeof( tElement ) );
-                if ( pElement )
-                {
-                    strcpy((char *)pElement->data, buf);
-                    pElement->size = strlen( (char *)pElement->data );
-                    queue_put( pElement );
-                }
-            }
-        }
-    }
-
-    queue_cleanup();
-
-    return 0;
 }
 

@@ -1,11 +1,11 @@
-CC = gcc
+CC = gcc -m32
 AS = as
 LD = ld
 OBJDUMP = objdump
 CHMOD = chmod
 RM = rm -f
 
-CFLAGS = -Wall -m32 -g
+CFLAGS = -Wall -g
 LDFLAGS = -z execstack
 
 

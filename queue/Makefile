@@ -1,9 +1,16 @@
 CC = gcc
 
-all: queue
+all: queue_test producer_consumer
 
-queue: queue.c
-	$(CC) -Wall -lpthread $< -o $@
+queue_test: queue_test.o queue.o
+	$(CC) -lpthread $^ -o $@
+
+producer_consumer: producer_consumer.o queue.o
+	$(CC) -lpthread $^ -o $@
+
+%.o: %.c queue.h
+	$(CC) -Wall -c $< -o $@
 
 clean:
-	rm -f queue
+	rm -f queue_test producer_consumer
+	rm -f *.o

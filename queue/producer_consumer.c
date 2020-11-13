@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/time.h>
 #include <time.h>
 #include "queue.h"
@@ -47,16 +48,10 @@ char *itemName[8] = {
 //    Functions
 // /////////////////////////////////////////////////////////////////////////////
 
-void show_element(void *pObj, int index)
+void signal_hdlr(int sig)
 {
-    tItem *pItem = pObj;
-
-    printf("[%d] ", index);
-    if ( pItem )
-    {
-        printf("%d (%s)", pItem->no, pItem->name);
-    }
-    printf("\n");
+    pthread_cancel( tid_p );
+    pthread_cancel( tid_c );
 }
 
 int rand_number(void)
@@ -72,6 +67,25 @@ int rand_number(void)
     val = ((rand() % (max - min + 1)) + min);
 
     return val;
+}
+
+void free_element(void *pObj)
+{
+    tItem *pItem = pObj;
+
+    free( pItem );
+}
+
+void show_element(void *pObj, int index)
+{
+    tItem *pItem = pObj;
+
+    printf("[%d] ", index);
+    if ( pItem )
+    {
+        printf("%d (%s)", pItem->no, pItem->name);
+    }
+    printf("\n");
 }
 
 void *producer(void *arg)
@@ -112,7 +126,7 @@ void *consumer(void *arg)
         if ( pItem )
         {
             printf("%s ... %d (%s)\n", __func__, pItem->no, pItem->name);
-            free( pItem );
+            free_element( pItem );
         }
     }
 
@@ -122,6 +136,10 @@ void *consumer(void *arg)
 int main(int argc, char *argv[])
 {
     int retval;
+
+    signal(SIGINT,  signal_hdlr);
+    signal(SIGKILL, signal_hdlr);
+    signal(SIGTERM, signal_hdlr);
 
     queue_init();
 
@@ -138,19 +156,16 @@ int main(int argc, char *argv[])
     if (retval != 0)
     {
         printf("ERR: fail to create the consumer thread\n");
-        pthread_detach( tid_p );
+        pthread_cancel( tid_p );
         return -1;
     }
-
-    //printf("\nPress ENTER to exit !\n\n");
-    //getchar();
 
     pthread_join(tid_p, NULL);
     pthread_join(tid_c, NULL);
 
     queue_dump( show_element );
 
-    queue_cleanup();
+    queue_cleanup( free_element );
 
     return 0;
 }

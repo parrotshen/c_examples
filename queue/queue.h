@@ -15,6 +15,7 @@
 //    Type declarations
 // /////////////////////////////////////////////////////////////////////////////
 
+typedef void (*tQueueCleanup)(void *pElement);
 typedef void (*tQueueDump)(void *pElement, int index);
 
 
@@ -28,7 +29,7 @@ typedef void (*tQueueDump)(void *pElement, int index);
 // /////////////////////////////////////////////////////////////////////////////
 
 void  queue_init(void);
-void  queue_cleanup(void);
+void  queue_cleanup(tQueueCleanup);
 void  queue_put(void *pElement);
 void *queue_get(void);
 int   queue_elements(void);

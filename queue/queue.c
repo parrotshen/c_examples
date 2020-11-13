@@ -52,7 +52,7 @@ void queue_init(void)
     pthread_mutex_init(&_queue.lock, NULL);
 }
 
-void queue_cleanup(void)
+void queue_cleanup(tQueueCleanup pFunc)
 {
     int i;
 
@@ -60,7 +60,7 @@ void queue_cleanup(void)
     {
         if ( _queue.pElement[i] )
         {
-            free( _queue.pElement[i] );
+            pFunc( _queue.pElement[i] );
             _queue.pElement[i] = NULL;
         }
     }

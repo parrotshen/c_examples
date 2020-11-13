@@ -30,6 +30,13 @@ typedef struct _tElement
 //    Functions
 // /////////////////////////////////////////////////////////////////////////////
 
+void free_element(void *pObj)
+{
+    tElement *pElement = pObj;
+
+    free( pElement );
+}
+
 void show_element(void *pObj, int index)
 {
     tElement *pElement = pObj;
@@ -80,12 +87,13 @@ int main(int argc, char *argv[])
                 pElement = queue_get();
                 if ( pElement )
                 {
-                    printf("%s\n\n", (char *)pElement->data);
-                    free( pElement );
+                    printf("<- %s\n\n", (char *)pElement->data);
+                    free_element( pElement );
                 }
             }
             else if (0 == strcmp("put", buf))
             {
+                printf("->\n\n");
                 queue_put( NULL );
             }
             else
@@ -93,6 +101,7 @@ int main(int argc, char *argv[])
                 pElement = malloc( sizeof( tElement ) );
                 if ( pElement )
                 {
+                    printf("-> %s\n\n", buf);
                     strcpy((char *)pElement->data, buf);
                     pElement->size = strlen( (char *)pElement->data );
                     queue_put( pElement );
@@ -101,7 +110,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    queue_cleanup();
+    queue_cleanup( free_element );
 
     return 0;
 }

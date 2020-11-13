@@ -103,10 +103,18 @@ void *producer(void *arg)
         pItem = malloc( sizeof( tItem ) );
         if ( pItem )
         {
-            printf("%s ... %d (%s)\n", __func__, no, itemName[val & 0x7]);
+            printf(
+                "[1;31m%s[0m ... %d (%s)\n",
+                __func__,
+                no,
+                itemName[val & 0x7]
+            );
             pItem->no = no++;
             strcpy(pItem->name, itemName[val & 0x7]);
-            queue_put( pItem );
+            if (queue_put( pItem ) != 0)
+            {
+                free_element( pItem );
+            }
         }
     }
 
@@ -125,7 +133,12 @@ void *consumer(void *arg)
         pItem = queue_get();
         if ( pItem )
         {
-            printf("%s ... %d (%s)\n", __func__, pItem->no, pItem->name);
+            printf(
+                "[1;33m%s[0m ... %d (%s)\n",
+                __func__,
+                pItem->no,
+                pItem->name
+            );
             free_element( pItem );
         }
     }
@@ -141,7 +154,7 @@ int main(int argc, char *argv[])
     signal(SIGKILL, signal_hdlr);
     signal(SIGTERM, signal_hdlr);
 
-    queue_init();
+    queue_init(free_element, show_element);
 
     retval = pthread_attr_init( &tattr );
     retval = pthread_create(&tid_p, &tattr, producer, NULL);
@@ -163,9 +176,9 @@ int main(int argc, char *argv[])
     pthread_join(tid_p, NULL);
     pthread_join(tid_c, NULL);
 
-    queue_dump( show_element );
+    queue_dump();
 
-    queue_cleanup( free_element );
+    queue_cleanup();
 
     return 0;
 }

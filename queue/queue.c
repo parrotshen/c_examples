@@ -20,6 +20,8 @@ typedef struct _tQueue
     pthread_mutex_t  lock;
     unsigned short   get;
     unsigned short   put;
+    tQueueCleanup    pCleanup;
+    tQueueDump       pDump;
     void            *pElement[MAX_QUEUE];
 } tQueue;
 
@@ -35,7 +37,7 @@ static tQueue _queue;
 //    Functions
 // /////////////////////////////////////////////////////////////////////////////
 
-void queue_init(void)
+void queue_init(tQueueCleanup pCleanup, tQueueDump pDump)
 {
     /*
      *        ________________ 
@@ -48,11 +50,13 @@ void queue_init(void)
      *
      */
     memset(&_queue, 0x00, sizeof( tQueue ));
+    _queue.pCleanup = pCleanup;
+    _queue.pDump = pDump;
 
     pthread_mutex_init(&_queue.lock, NULL);
 }
 
-void queue_cleanup(tQueueCleanup pFunc)
+void queue_cleanup(void)
 {
     int i;
 
@@ -60,7 +64,10 @@ void queue_cleanup(tQueueCleanup pFunc)
     {
         if ( _queue.pElement[i] )
         {
-            pFunc( _queue.pElement[i] );
+            if ( _queue.pCleanup )
+            {
+                _queue.pCleanup( _queue.pElement[i] );
+            }
             _queue.pElement[i] = NULL;
         }
     }
@@ -69,7 +76,7 @@ void queue_cleanup(tQueueCleanup pFunc)
     _queue.put = 0;
 }
 
-void queue_put(void *pElement)
+int queue_put(void *pObj)
 {
     unsigned short next;
 
@@ -81,24 +88,29 @@ void queue_put(void *pElement)
     {
         pthread_mutex_unlock( &_queue.lock );
         printf("%s: queue is full\n", __func__);
-        return;
+        return -1;
     }
 
     if ( _queue.pElement[next] )
     {
         printf("%s: pElement[%u] is not NULL\n", __func__, next);
-        free( _queue.pElement[next] );
+        if ( _queue.pCleanup )
+        {
+            _queue.pCleanup( _queue.pElement[next] );
+        }
     }
-    _queue.pElement[next] = pElement;
 
+    _queue.pElement[next] = pObj;
     _queue.put = next;
 
     pthread_mutex_unlock( &_queue.lock );
+
+    return 0;
 }
 
 void *queue_get(void)
 {
-    void *pElement = NULL;
+    void *pObj = NULL;
     unsigned short next;
 
     pthread_mutex_lock( &_queue.lock );
@@ -113,14 +125,13 @@ void *queue_get(void)
 
     next = ((_queue.get + 1) % MAX_QUEUE);
 
-    pElement = _queue.pElement[next];
+    pObj = _queue.pElement[next];
     _queue.pElement[next] = NULL;
-
     _queue.get = next;
 
     pthread_mutex_unlock( &_queue.lock );
 
-    return pElement;
+    return pObj;
 }
 
 int queue_elements(void)
@@ -144,26 +155,30 @@ int queue_elements(void)
     return number;
 }
 
-void queue_dump(tQueueDump pFunc)
+void queue_dump(void)
 {
     int next;
     int number;
     int i;
 
-    number = queue_elements();
-    printf("Queue element number = %d\n", number);
-
-    pthread_mutex_lock( &_queue.lock );
-
-    next = ((_queue.get + 1) % MAX_QUEUE);
-    for (i=0; i<number; i++)
+    if ( _queue.pDump )
     {
-        pFunc(_queue.pElement[next], next);
-        next = ((next + 1) % MAX_QUEUE);
+        printf("\n");
+        number = queue_elements();
+        printf("Queue has %d element(s)\n", number);
+
+        pthread_mutex_lock( &_queue.lock );
+
+        next = ((_queue.get + 1) % MAX_QUEUE);
+        for (i=0; i<number; i++)
+        {
+            _queue.pDump(_queue.pElement[next], next);
+            next = ((next + 1) % MAX_QUEUE);
+        }
+
+        pthread_mutex_unlock( &_queue.lock );
+
+        printf("\n");
     }
-
-    pthread_mutex_unlock( &_queue.lock );
-
-    printf("\n");
 }
 

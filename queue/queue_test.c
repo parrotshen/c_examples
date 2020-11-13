@@ -54,8 +54,9 @@ int main(int argc, char *argv[])
     tElement *pElement = NULL;
     char  buf[256];
     int   size;
+    int   retval;
 
-    queue_init();
+    queue_init(free_element, show_element);
 
     while (1)
     {
@@ -80,7 +81,7 @@ int main(int argc, char *argv[])
             }
             else if (0 == strcmp("show", buf))
             {
-                queue_dump( show_element );
+                queue_dump();
             }
             else if (0 == strcmp("get", buf))
             {
@@ -93,24 +94,38 @@ int main(int argc, char *argv[])
             }
             else if (0 == strcmp("put", buf))
             {
-                printf("->\n\n");
-                queue_put( NULL );
+                retval = queue_put( NULL );
+                if (retval != 0)
+                {
+                    ;
+                }
+                else
+                {
+                    printf("->\n\n");
+                }
             }
             else
             {
                 pElement = malloc( sizeof( tElement ) );
                 if ( pElement )
                 {
-                    printf("-> %s\n\n", buf);
                     strcpy((char *)pElement->data, buf);
                     pElement->size = strlen( (char *)pElement->data );
-                    queue_put( pElement );
+                    retval = queue_put( pElement );
+                    if (retval != 0)
+                    {
+                        free_element( pElement );
+                    }
+                    else
+                    {
+                        printf("-> %s\n\n", buf);
+                    }
                 }
             }
         }
     }
 
-    queue_cleanup( free_element );
+    queue_cleanup();
 
     return 0;
 }

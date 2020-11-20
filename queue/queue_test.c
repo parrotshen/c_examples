@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
                 if ( pElement )
                 {
                     strcpy((char *)pElement->data, buf);
-                    pElement->size = strlen( (char *)pElement->data );
+                    pElement->size = strlen( buf );
                     retval = queue_put( pElement );
                     if (retval != 0)
                     {

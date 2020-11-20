@@ -32,12 +32,14 @@ pthread_attr_t tattr;
 pthread_t tid_p;
 pthread_t tid_c;
 
-char *itemName[8] = {
+char *itemName[10] = {
     "bicycle",
     "book",
     "computer",
+    "hat",
     "lamp",
     "refrigerator",
+    "shoes",
     "table",
     "television",
     "water"
@@ -95,7 +97,7 @@ void *producer(void *arg)
     int val;
     int i;
 
-    for (i=0; i<30; i++)
+    for (i=0; i<20; i++)
     {
         val = rand_number();
         usleep( val );
@@ -107,10 +109,10 @@ void *producer(void *arg)
                 "[1;31m%s[0m ... %d (%s)\n",
                 __func__,
                 no,
-                itemName[val & 0x7]
+                itemName[val % 10]
             );
             pItem->no = no++;
-            strcpy(pItem->name, itemName[val & 0x7]);
+            strcpy(pItem->name, itemName[val % 10]);
             if (queue_put( pItem ) != 0)
             {
                 free_element( pItem );
@@ -126,7 +128,7 @@ void *consumer(void *arg)
     tItem *pItem = NULL;
     int i;
 
-    for (i=0; i<30; i++)
+    for (i=0; i<20; i++)
     {
         usleep( rand_number() );
 

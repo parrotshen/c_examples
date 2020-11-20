@@ -42,10 +42,10 @@ void queue_init(tQueueCleanup pCleanup, tQueueDump pDump)
     /*
      *        ________________ 
      *       |________________|
-     * get ->|________________|
-     *       |________________|
-     *       |________________|
-     *       |________________|<- put
+     *       |________________|<- get
+     *       |________________| \
+     *       |________________| | queue elements
+     * put ->|________________| /
      *       |________________|
      *
      */
@@ -59,6 +59,8 @@ void queue_init(tQueueCleanup pCleanup, tQueueDump pDump)
 void queue_cleanup(void)
 {
     int i;
+
+    pthread_mutex_lock( &_queue.lock );
 
     for (i=0; i<MAX_QUEUE; i++)
     {
@@ -74,6 +76,8 @@ void queue_cleanup(void)
 
     _queue.get = 0;
     _queue.put = 0;
+
+    pthread_mutex_unlock( &_queue.lock );
 }
 
 int queue_put(void *pObj)

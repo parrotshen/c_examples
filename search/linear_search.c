@@ -11,35 +11,27 @@ int g_iteration = 0;
 #endif
 
 
-int binary_search(int A[], int start, int end, int target)
+int linear_search(int A[], int start, int end, int target)
 {
     int index = -1;
-    int mid;
 
     if (start > end) return -1;
 
-    mid = (((end - start) >> 1) + start);
     #if DEBUG
-    printf(" A[%2d..%2d..%2d] -> %2d\n", start, mid, end, A[mid]);
+    printf(" A[%2d] -> %2d\n", start, A[start]);
     g_iteration++;
     #endif
 
-    if (target > A[mid])
+    if (target != A[start])
     {
-        start = (mid + 1);
-        index = binary_search(A, start, end, target);
-    }
-    else if (target < A[mid])
-    {
-        end = (mid - 1);
-        index = binary_search(A, start, end, target);
+        index = linear_search(A, (start + 1), end, target);
     }
     else
     {
         #if DEBUG
-        printf(" found at A[%d]\n", mid);
+        printf(" found at A[%d]\n", start);
         #endif
-        index = mid;
+        index = start;
     }
 
     return index;
@@ -59,11 +51,11 @@ int main(int argc, char *argv[])
     }
     else
     {
-        printf("Usage: binary_search TARGET\n\n");
+        printf("Usage: linear_search TARGET\n\n");
         return 0;
     }
 
-    index = binary_search(g_data, 0, (g_dataLen - 1), target);
+    index = linear_search(g_data, 0, (g_dataLen - 1), target);
 
     #if DEBUG
     printf(" iteration(s) ... [1;36m%d[0m\n\n", g_iteration);

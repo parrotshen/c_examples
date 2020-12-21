@@ -65,7 +65,7 @@
  */
 unsigned char *bitmap_alloc(int bits, int *pLen)
 {
-    void *pBuf;
+    void *pBuf = NULL;
     int len;
 
     len = (bits >> 3);

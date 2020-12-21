@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <semaphore.h>
 #include <sys/time.h>
 #include <time.h>
 #include "queue.h"
@@ -31,6 +32,10 @@ typedef struct _tItem
 pthread_attr_t tattr;
 pthread_t tid_p;
 pthread_t tid_c;
+
+sem_t avail;
+
+int stop = 0;
 
 char *itemName[10] = {
     "bicycle",
@@ -100,6 +105,7 @@ void *producer(void *arg)
     for (i=0; i<20; i++)
     {
         val = rand_number();
+        /* a piece of time to produce */
         usleep( val );
 
         pItem = malloc( sizeof( tItem ) );
@@ -113,12 +119,20 @@ void *producer(void *arg)
             );
             pItem->no = no++;
             strcpy(pItem->name, itemName[val % 10]);
-            if (queue_put( pItem ) != 0)
+            if (0 == queue_put( pItem ))
+            {
+                sem_post( &avail );
+            }
+            else
             {
                 free_element( pItem );
             }
         }
     }
+
+    sem_post( &avail );
+    usleep( rand_number() );
+    stop = 1;
 
     pthread_exit(0);
 }
@@ -126,11 +140,16 @@ void *producer(void *arg)
 void *consumer(void *arg)
 {
     tItem *pItem = NULL;
-    int i;
 
-    for (i=0; i<20; i++)
+    while ( 1 )
     {
-        usleep( rand_number() );
+        if (sem_wait( &avail ) != 0)
+        {
+            printf("%s: sem_wait ... failed\n", __func__);
+            break;
+        }
+
+        if ( stop ) break;
 
         pItem = queue_get();
         if ( pItem )
@@ -142,6 +161,9 @@ void *consumer(void *arg)
                 pItem->name
             );
             free_element( pItem );
+
+            /* a piece of time to consume */
+            usleep( rand_number() );
         }
     }
 
@@ -155,6 +177,8 @@ int main(int argc, char *argv[])
     signal(SIGINT,  signal_hdlr);
     signal(SIGKILL, signal_hdlr);
     signal(SIGTERM, signal_hdlr);
+
+    sem_init(&avail, 0, 0);
 
     queue_init(free_element, show_element);
 
@@ -181,6 +205,8 @@ int main(int argc, char *argv[])
     queue_dump();
 
     queue_cleanup();
+
+    sem_destroy( &avail );
 
     return 0;
 }

@@ -119,9 +119,19 @@ int main(int argc, char *argv[])
         bitmap_set(pMap, ID_Perseus);
         bitmap_set(pMap, ID_Vulpecula);
 
-        if (argc > 1)
+        for (i=1; i<argc; i++)
         {
-            bitmap_clear(pMap, atoi( argv[1] ));
+            if (atoi( argv[i] ) < STAR_SIGN_NUM)
+            {
+                if ( bitmap_check(pMap, atoi( argv[i] )) )
+                {
+                    bitmap_clear(pMap, atoi( argv[i] ));
+                }
+                else
+                {
+                    bitmap_set(pMap, atoi( argv[i] ));
+                }
+            }
         }
 
         printf("\n");

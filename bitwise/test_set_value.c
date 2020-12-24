@@ -4,7 +4,7 @@
 #include "bitwise.h"
 
 
-uint8 g_pattern[42][2] = {
+uint8 g_pattern[43][2] = {
     /*
      * [1] 1111 1111
      *     x
@@ -298,6 +298,13 @@ uint8 g_pattern[42][2] = {
      */
     { 20, 20 },
 
+    /*
+     * [43] 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111
+     *                  xx xxxx xxxx xxxx xxxx xxxx xxxx xxxx xx
+     *         F    F    C    0    0    0    0    0    0    0    3
+     */
+    { 10, 32 }
+
 };
 
 uint8 g_buf[256];
@@ -360,7 +367,7 @@ int main(int argc, char *argv[])
     bit_dump_color(g_buf, 8, offset, bits);
     bit_dump(g_buf, 8, 1);
 #else
-    for (i=0; i<42; i++)
+    for (i=0; i<43; i++)
     {
         printf(
             "[%d] offset %d, bits %d\n",

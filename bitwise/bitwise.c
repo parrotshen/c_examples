@@ -252,9 +252,9 @@ static inline uint64 bit_get_value(uint8 *pBuf, int offset, int bits)
         #endif
 
         size[1] -= size[0];
-        value |= (byte << size[1]);
+        value |= ((uint64)byte << size[1]);
         #if DEBUG
-        printf(" value %llx = %llx | %x\n", value, temp, (byte << size[1]));
+        printf(" value %llx = %llx | %llx\n", value, temp, ((uint64)byte << size[1]));
         #endif
 
         if (0 == j) R[1] = 0;

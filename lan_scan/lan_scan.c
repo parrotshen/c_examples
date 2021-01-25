@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include <pthread.h>
 
 #include <linux/if_packet.h>
@@ -13,8 +14,28 @@
 #include <netinet/in.h>  /* htons */
 
 
+// /////////////////////////////////////////////////////////////////////////////
+//    Macro declarations
+// /////////////////////////////////////////////////////////////////////////////
+
 #define RX_BUF_SIZE  (4096)
 
+
+// /////////////////////////////////////////////////////////////////////////////
+//    Type declarations
+// /////////////////////////////////////////////////////////////////////////////
+
+typedef struct _tLanHost
+{
+    /* store 1 to 8 MAC addresses per IP */
+    unsigned char  mac[8][6];
+    int            macNum;
+} tLanHost;
+
+
+// /////////////////////////////////////////////////////////////////////////////
+//    Variables declarations
+// /////////////////////////////////////////////////////////////////////////////
 
 static unsigned char  _txBuf[RX_BUF_SIZE];
 static int            _txLen;
@@ -24,16 +45,20 @@ static int            _rxLen;
 static unsigned char  _macDst[6] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
-static unsigned char  _macSrc[6] = {0};
-static unsigned char  _ipDst[4]  = {0};
-static unsigned char  _ipSrc[4]  = {0};
-
-static unsigned char  _ipMine[4];
-static int  _hosts[256] = {0};
+static unsigned char  _macSrc[6];
+static unsigned char  _ipDst[4];
+static unsigned char  _ipSrc[4];
+static unsigned char  _ipZero[4];
 
 static int  _ifIndex = 0;  /* Ethernet Interface index */
 static int  _sock = -1;
 
+static tLanHost _hosts[256];
+
+
+// /////////////////////////////////////////////////////////////////////////////
+//    Functions
+// /////////////////////////////////////////////////////////////////////////////
 
 #if 0
 void dump(char *pName, const void *pAddr, unsigned int size)
@@ -107,10 +132,10 @@ int openSocket(char *pNetDev)
     }
 
     ip = ntohl( ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr );
-    _ipMine[0] = ((ip >> 24) & 0xFF);
-    _ipMine[1] = ((ip >> 16) & 0xFF);
-    _ipMine[2] = ((ip >>  8) & 0xFF);
-    _ipMine[3] = ((ip      ) & 0xFF);
+    _ipSrc[0] = ((ip >> 24) & 0xFF);
+    _ipSrc[1] = ((ip >> 16) & 0xFF);
+    _ipSrc[2] = ((ip >>  8) & 0xFF);
+    _ipSrc[3] = ((ip      ) & 0xFF);
 
     return fd;
 }
@@ -172,10 +197,17 @@ void sendArp(unsigned char *pIpDst)
     pBuf[i++] = _macSrc[3];
     pBuf[i++] = _macSrc[4];
     pBuf[i++] = _macSrc[5];
+    #if 0
     pBuf[i++] = _ipSrc[0];
     pBuf[i++] = _ipSrc[1];
     pBuf[i++] = _ipSrc[2];
     pBuf[i++] = _ipSrc[3];
+    #else
+    pBuf[i++] = _ipZero[0];
+    pBuf[i++] = _ipZero[1];
+    pBuf[i++] = _ipZero[2];
+    pBuf[i++] = _ipZero[3];
+    #endif
     pBuf[i++] = 0x00;
     pBuf[i++] = 0x00;
     pBuf[i++] = 0x00;
@@ -210,17 +242,19 @@ void sendArp(unsigned char *pIpDst)
     #endif
 }
 
-
 void *recvTask(void *pParam)
 {
     struct ethhdr *pEth = (struct ethhdr *)_rxBuf;
     unsigned char *pArp;
     unsigned char *pMac;
     unsigned char *pIp;
+    int found;
+    int i;
+    int j;
 
     while ( 1 )
     {
-        /* Wait for incoming packet... */    
+        /* wait for incoming packet... */    
         _rxLen = recvfrom(_sock, _rxBuf, RX_BUF_SIZE, 0, NULL, NULL);
         if (_rxLen < 0)
         {
@@ -242,30 +276,57 @@ void *recvTask(void *pParam)
                 (pIp[1] == _ipDst[1]) &&
                 (pIp[2] == _ipDst[2]))
             {
-                if ( _hosts[ pIp[3] ] )
+                if (0 == _hosts[ pIp[3] ].macNum)
                 {
-                    _hosts[ pIp[3] ] = 0;
-
-                    if ((pIp[0] == _ipMine[0]) &&
-                        (pIp[1] == _ipMine[1]) &&
-                        (pIp[2] == _ipMine[2]) &&
-                        (pIp[3] == _ipMine[3]))
-                    {
-                        printf("[1;37m");
-                    }
+                    /* display IP and MAC address */
+                    memcpy(_hosts[ pIp[3] ].mac[0], pMac, 6);
+                    _hosts[ pIp[3] ].macNum = 1;
 
                     printf(
-                        "%u.%u.%u.%u\t%02x:%02x:%02x:%02x:%02x:%02x\n",
+                        "%u.%u.%u.%u\t%02x:%02x:%02x:%02x:%02x:%02x",
                         pIp[0], pIp[1], pIp[2], pIp[3],
                         pMac[0], pMac[1], pMac[2], pMac[3], pMac[4], pMac[5]
                     );
 
-                    if ((pIp[0] == _ipMine[0]) &&
-                        (pIp[1] == _ipMine[1]) &&
-                        (pIp[2] == _ipMine[2]) &&
-                        (pIp[3] == _ipMine[3]))
+                    if ((0 == memcmp(_ipSrc,  pIp,  4)) &&
+                        (0 == memcmp(_macSrc, pMac, 6)))
                     {
-                        printf("[0m");
+                        printf(" *\n");
+                    }
+                    else
+                    {
+                        printf("\n");
+                    }
+                }
+                else
+                {
+                    /* check whether IP address is conflicted */
+                    found = 0;
+                    for (i=0; i<_hosts[ pIp[3] ].macNum; i++)
+                    {
+                        if (0 == memcmp(_hosts[ pIp[3] ].mac[i], pMac, 6))
+                        {
+                            found = 1;
+                            break;
+                        }
+                    }
+
+                    if ( !found )
+                    {
+                        /* have a duplicated IP address */
+                        j = _hosts[ pIp[3] ].macNum;
+                        if (j < 8)
+                        {
+                            memcpy(_hosts[ pIp[3] ].mac[j], pMac, 6);
+                            _hosts[ pIp[3] ].macNum++;
+                        }
+
+                        printf(
+                            "%u.%u.%u.%u\t%02x:%02x:%02x:%02x:%02x:%02x",
+                            pIp[0], pIp[1], pIp[2], pIp[3],
+                            pMac[0], pMac[1], pMac[2], pMac[3], pMac[4], pMac[5]
+                        );
+                        printf(" !\n");
                     }
                 }
             }
@@ -273,6 +334,14 @@ void *recvTask(void *pParam)
     }
 
     pthread_exit( NULL );
+}
+
+void sigint(int signum)
+{
+    closeSocket( _sock );
+    _sock = -1;
+
+    exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -306,8 +375,13 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    memset(_hosts, 0x00, (sizeof(int) * 256));
-    memset(_ipSrc, 0x0, 4);
+    /* establish signal handler */
+    signal(SIGINT,  sigint);
+    signal(SIGKILL, sigint);
+    signal(SIGTERM, sigint);
+
+    memset(_hosts, 0x00, (sizeof(tLanHost) * 256));
+    memset(_ipZero, 0x0, 4);
 
     _sock = openSocket( pNetDev );
     if (_sock < 0)
@@ -348,8 +422,6 @@ int main(int argc, char *argv[])
         _ipDst[3] = i;
 
         sendArp( _ipDst );
-
-        _hosts[i] = 1;
 
         usleep( 50000 );
     }

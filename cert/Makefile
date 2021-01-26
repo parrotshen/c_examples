@@ -1,6 +1,9 @@
 CC = gcc
+# openssl-0.9.8l
+OPENSSL = /usr/local/openssl
 CFLAGS += -Wall
-CFLAGS += -DOPENSSL_NO_KRB5
+CFLAGS += -I$(OPENSSL)/include
+CFLAGS += -L$(OPENSSL)/lib
 CFLAGS += -lssl
 CFLAGS += -lcrypto
 

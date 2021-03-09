@@ -1,7 +1,8 @@
 CC = gcc
 CFLAGS = -Wall
 
-APPS  = factorial random shift div_64bits div_negative
+APPS  = div_64bits div_negative
+APPS += digit factorial random shift
 APPS += double.ok double.fail
 
 all: $(APPS)
@@ -10,6 +11,9 @@ double.ok: double.c
 	$(CC) $(CFLAGS) -D__TOLERANCE__ -lm $< -o $@
 
 double.fail: double.c
+	$(CC) $(CFLAGS) $< -o $@
+
+digit: digit.c
 	$(CC) $(CFLAGS) $< -o $@
 
 factorial: factorial.c

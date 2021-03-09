@@ -1,0 +1,2 @@
+export my_env="global scope"
+echo "my_env=\"$my_env\""

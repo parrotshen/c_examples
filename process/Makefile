@@ -1,6 +1,6 @@
 CC = gcc
 
-all: daemon zombie pthread system signal pause pipe
+all: daemon zombie pthread system signal pause pipe backtrace
 
 daemon: daemon.c
 	$(CC) -Wall $< -o $@
@@ -23,5 +23,8 @@ pause: pause.c
 pipe: pipe.c
 	$(CC) -Wall $< -o $@
 
+backtrace: backtrace.c
+	$(CC) -Wall -rdynamic $< -o $@
+
 clean:
-	rm -f daemon zombie pthread system signal pause pipe
+	rm -f daemon zombie pthread system signal pause pipe backtrace

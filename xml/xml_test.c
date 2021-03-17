@@ -100,18 +100,14 @@ char *RemoveSpace(char *pIn)
     return pOut;
 }
 
-char *GetAttribute(
-    xmlNode *pNode,
-    char    *pTagName,
-    char    *pAttrName
-)
+char *GetAttribute(xmlNode *pNode, char *pName)
 {
     xmlAttr *pAttr = NULL;
     int  found = 0;
 
     for (pAttr=pNode->properties; pAttr; pAttr=pAttr->next)
     {
-        if (0 == strcmp((char *)pAttr->name, pAttrName))
+        if (0 == strcmp((char *)(pAttr->name), pName))
         {
             found = 1;
             break;
@@ -122,8 +118,8 @@ char *GetAttribute(
     {
         printf(
             "<%s>'s attribute '%s' is missing\n",
-            pTagName,
-            pAttrName
+            (char *)(pNode->name),
+            pName
         );
         return NULL;
     }
@@ -132,13 +128,13 @@ char *GetAttribute(
     {
         printf(
             "<%s>'s attribute '%s' is empty\n",
-            pTagName,
-            pAttrName
+            (char *)(pNode->name),
+            pName
         );
         return NULL;
     }
 
-    return (char *)pAttr->children->content;
+    return (char *)(pAttr->children->content);
 }
 
 int ProcDescript(xmlNode *pNode, char *pName)
@@ -171,7 +167,7 @@ int ProcReturn(xmlNode *pNode, char *pName)
     #else
     printf(
         "%s  /* %s */\n",
-        GetAttribute(pNode, pName, ATT_NAME_TYPE),
+        GetAttribute(pNode, ATT_NAME_TYPE),
         RemoveSpace( pString )
     );
     #endif
@@ -188,7 +184,7 @@ int ProcArgument(xmlNode *pNode, char *pName)
 
     pString = (char *)xmlNodeGetContent( pNode );
 
-    last = atoi( GetAttribute(pNode, pName, ATT_NAME_LAST) );
+    last = atoi( GetAttribute(pNode, ATT_NAME_LAST) );
 
     #if (DEBUG_PARSE_XML)
     printf("    + %s\n", pNode->name);
@@ -196,8 +192,8 @@ int ProcArgument(xmlNode *pNode, char *pName)
     #else
     printf(
         "    %s %s%c  /* %s */\n",
-        GetAttribute(pNode, pName, ATT_NAME_TYPE),
-        GetAttribute(pNode, pName, ATT_NAME_NAME),
+        GetAttribute(pNode, ATT_NAME_TYPE),
+        GetAttribute(pNode, ATT_NAME_NAME),
         (( last ) ? ' ' : ','),
         RemoveSpace( pString )
     );
@@ -227,7 +223,7 @@ int ProcFunction(xmlNode *pNode, char *pName)
 
     #if !(DEBUG_PARSE_XML)
     printf("#include <libxml/%s>\n\n",
-        GetAttribute(pNode, TAG_NAME_FUNCTION, ATT_NAME_INCLUDE)
+        GetAttribute(pNode, ATT_NAME_INCLUDE)
     );
     #endif
 
@@ -235,7 +231,7 @@ int ProcFunction(xmlNode *pNode, char *pName)
 
     #if !(DEBUG_PARSE_XML)
     printf("%s(\n",
-        GetAttribute(pNode, pName, ATT_NAME_NAME)
+        GetAttribute(pNode, ATT_NAME_NAME)
     );
     #endif
 
@@ -256,7 +252,7 @@ void ForEachTag(xmlNode *pParent, char *pTag, tProcTagCb pFunc)
     {
         if (XML_ELEMENT_NODE == pNode->type)
         {
-            if (0 == strcmp((char *)pNode->name, pTag))
+            if (0 == strcmp((char *)(pNode->name), pTag))
             {
                 pFunc(pNode, pTag);
             }
@@ -341,12 +337,13 @@ int main(int argc, char *argv[])
     {
         printf("ERR: cannot open file %s\n", argv[1]);
         printf("\n");
-        return -1;
     }
+    else
+    {
+        status = ParseXML( pXmlDoc );
 
-    status = ParseXML( pXmlDoc );
-
-    xmlFreeDoc( pXmlDoc );
+        xmlFreeDoc( pXmlDoc );
+    }
 
     /*
      *Free the global variables that may

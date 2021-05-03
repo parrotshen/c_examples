@@ -34,37 +34,39 @@ int main(int argc, char *argv[])
         switch ( ch )
         {
             case 'a':
-                printf("A: \"%s\"\n", optarg);
+                printf("a: \"%s\"\n", optarg);
                 break;
 
             case 'b':
-                printf("B: \"%s\"\n", optarg);
+                printf("b: \"%s\"\n", optarg);
                 break;
 
             case 'c':
-                printf("C: \"%s\"\n", optarg);
+                printf("c: \"%s\"\n", optarg);
                 break;
 
             case 'd':
-                printf("D: \"%s\"\n", optarg);
+                printf("d: \"%s\"\n", optarg);
                 break;
 
             case 'e':
-                printf("E: present\n");
+                printf("e: present\n");
                 break;
 
             case 'f':
-                printf("F: present\n");
+                printf("f: present\n");
                 break;
 
             case 'g':
-                printf("G: present\n");
+                printf("g: present\n");
                 break;
 
             case 'h':
-            default:
                 help();
                 return 0;
+
+            default:
+                printf("%c: \"%s\"\n", ch, optarg);
         }
     }
 

@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall
 
 APPS  = div_64bits div_negative
-APPS += digit factorial random shift
+APPS += digit factorial pi random shift
 APPS += double.ok double.fail
 
 all: $(APPS)
@@ -17,6 +17,9 @@ digit: digit.c
 	$(CC) $(CFLAGS) $< -o $@
 
 factorial: factorial.c
+	$(CC) $(CFLAGS) $< -o $@
+
+pi: pi.c
 	$(CC) $(CFLAGS) $< -o $@
 
 random: random.c

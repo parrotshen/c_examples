@@ -79,7 +79,7 @@ int parse_hex_string(char *pStr, unsigned char *pBuf, int bufLen)
 
 void help(void)
 {
-    printf("Usage: ii2_test [OPTION]...\n");
+    printf("Usage: iic_test [OPTION]...\n");
     printf("\n");
     printf("  -b BUS       I2C bus interface.\n");
     printf("  -a ADDRESS   I2C device address (HEX string).\n");
@@ -87,8 +87,8 @@ void help(void)
     printf("  -r BYTES     Read operation.\n");
     printf("  -h           The help message.\n");
     printf("\n");
-    printf("EX: ii2_test -b 10 -a 5B -w FC00C01020\n");
-    printf("EX: ii2_test -b 10 -a 5B -w FA -r 1\n");
+    printf("EX: iic_test -b 10 -a 5B -w FC00C01020\n");
+    printf("EX: iic_test -b 10 -a 5B -w FA -r 1\n");
     printf("\n");
 }
 

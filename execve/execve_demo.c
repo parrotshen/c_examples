@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    printf("execve(");
+    printf("[7mexecve(");
     for (i=1; i<argc; i++)
     {
         printf("\"%s\", ", argv[i]);
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     {
         printf("NULL, ");
     }
-    printf("NULL);\n");
+    printf("NULL);[27m\n\n");
 
     execve(argv[1], &argv[1], NULL);
     perror( "execve" );

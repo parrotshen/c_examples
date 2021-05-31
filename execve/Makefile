@@ -5,7 +5,7 @@ OBJDUMP = objdump
 RM = rm -f
 
 
-all: execve_demo execve_ls syscall_ls
+all: execve_demo execve_ls syscall_ls interpreter
 
 
 # C program
@@ -13,6 +13,9 @@ execve_demo: execve_demo.o
 	$(CC) -o $@ $<
 
 execve_ls: execve_ls.o
+	$(CC) -o $@ $<
+
+interpreter: interpreter.o
 	$(CC) -o $@ $<
 
 %.o: %.c
@@ -29,7 +32,7 @@ syscall_ls: syscall_ls.o
 
 
 clean:
-	$(RM) execve_demo execve_ls
+	$(RM) execve_demo execve_ls interpreter
 	$(RM) syscall_ls syscall_ls.asm
 	$(RM) *.o
 

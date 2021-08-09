@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
     double y;
     double z;
-    int x;
+    double x;
 
     if (argc != 3)
     {
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    x = atoi( argv[1] );
+    x = strtod(argv[1], NULL);
     z = strtod(argv[2], NULL);
 
     /*
@@ -26,9 +26,9 @@ int main(int argc, char *argv[])
     *    logx( z ) = logk( z ) / logk( x )
     *              = ln( z ) / ln( x )
     */
-    y = log( z ) / log( (double)x );
+    y = log( z ) / log( x );
 
-    printf("log%d( %lf ) = %lf\n\n", x, z, y);
+    printf("log%lf( %lf ) = %lf\n\n", x, z, y);
 
     return 0;
 }

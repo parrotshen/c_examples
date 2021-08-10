@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall
 
 APPS += complex digit swap
-APPS += pi prime random
+APPS += euler pi prime random
 APPS += gcd_lcm factorize factorial
 APPS += powxy logx
 
@@ -16,6 +16,9 @@ digit: digit.c
 
 swap: swap.c
 	$(CC) $(CFLAGS) -o $@ $<
+
+euler: euler.c
+	$(CC) $(CFLAGS) -lm -o $@ $<
 
 pi: pi.c
 	$(CC) $(CFLAGS) -o $@ $<

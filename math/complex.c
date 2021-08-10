@@ -4,8 +4,8 @@
 
 typedef struct _tComplex
 {
-    int  real;
-    int  imag;
+    double  real;
+    double  imag;
 } tComplex;
 
 
@@ -55,25 +55,25 @@ int main(int argc, char *argv[])
     tComplex Y = { .real = 222, .imag = 111 };
     tComplex Z;
 
-    printf("X = %d + (%d)i\n", X.real, X.imag);
-    printf("Y = %d + (%d)i\n", Y.real, Y.imag);
+    printf("X = %f + (%f)i\n", X.real, X.imag);
+    printf("Y = %f + (%f)i\n", Y.real, Y.imag);
     printf("\n");
 
     printf("Addition:\n");
     cadd(&X, &Y, &Z);
-    printf("X + Y = %d + (%d)i\n\n", Z.real, Z.imag);
+    printf("X + Y = %f + (%f)i\n\n", Z.real, Z.imag);
 
     printf("Subtraction:\n");
     csub(&X, &Y, &Z);
-    printf("X - Y = %d + (%d)i\n\n", Z.real, Z.imag);
+    printf("X - Y = %f + (%f)i\n\n", Z.real, Z.imag);
 
     printf("Multiplication:\n");
     cmul(&X, &Y, &Z);
-    printf("X * Y = %d + (%d)i\n\n", Z.real, Z.imag);
+    printf("X * Y = %f + (%f)i\n\n", Z.real, Z.imag);
 
     printf("Divison:\n");
     cdiv(&X, &Y, &Z);
-    printf("X / Y = %d + (%d)i\n\n", Z.real, Z.imag);
+    printf("X / Y = %f + (%f)i\n\n", Z.real, Z.imag);
 
     return 0;
 }

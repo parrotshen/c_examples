@@ -4,7 +4,7 @@ CFLAGS = -Wall
 APPS += complex digit swap
 APPS += euler pi prime random
 APPS += gcd_lcm factorize factorial
-APPS += powxy logx
+APPS += powxy logx nthroot
 
 all: $(APPS)
 
@@ -42,6 +42,9 @@ powxy: powxy.c
 	$(CC) $(CFLAGS) -lm -o $@ $<
 
 logx: logx.c
+	$(CC) $(CFLAGS) -lm -o $@ $<
+
+nthroot: nthroot.c
 	$(CC) $(CFLAGS) -lm -o $@ $<
 
 clean:

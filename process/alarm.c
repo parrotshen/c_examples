@@ -19,6 +19,7 @@ void routine(int n)
 
 int main(int argc, char *argv[])
 {
+    int iterations = 10;
     int seconds = 3;
 
 
@@ -29,22 +30,25 @@ int main(int argc, char *argv[])
 
     signal(SIGALRM, routine);
 
-    alarm( seconds );
-
-    printf("[alarm] press any key within %d seconds\n", seconds);
+    while (iterations-- > 0)
     {
-        /* store old settings */
-        tcgetattr(STDIN_FILENO, &org_opts);
-        /* set new terminal parms */
-        memcpy(&new_opts, &org_opts, sizeof( new_opts ));
-        new_opts.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ECHOPRT | ECHOKE | ICRNL);
-        tcsetattr(STDIN_FILENO, TCSANOW, &new_opts);
-        getchar();
-        /* restore old settings */
-        tcsetattr(STDIN_FILENO, TCSANOW, &org_opts);
-    }
+        alarm( seconds );
 
-    alarm( 0 );
+        printf("[alarm] press any key within %d seconds\n", seconds);
+        {
+            /* store old settings */
+            tcgetattr(STDIN_FILENO, &org_opts);
+            /* set new terminal parms */
+            memcpy(&new_opts, &org_opts, sizeof( new_opts ));
+            new_opts.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ECHOPRT | ECHOKE | ICRNL);
+            tcsetattr(STDIN_FILENO, TCSANOW, &new_opts);
+            getchar();
+            /* restore old settings */
+            tcsetattr(STDIN_FILENO, TCSANOW, &org_opts);
+        }
+
+        alarm( 0 );
+    }
 
     printf("[alarm] terminated\n");
 

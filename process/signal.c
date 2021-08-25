@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <signal.h>
 
@@ -8,8 +9,8 @@ void sig_routine(int no)
 {
     switch ( no )
     {
-        case SIGTERM:
-            printf("(%d) SIGTERM\n", no);
+        case SIGHUP:
+            printf("(%d) SIGHUP\n", no);
             break;
         case SIGINT:
             /* CTrl + C */
@@ -19,9 +20,20 @@ void sig_routine(int no)
             /* CTrl + \ */
             printf("(%d) SIGQUIT\n", no);
             break;
-        case SIGTSTP:
-            /* CTrl + Z */
-            printf("(%d) SIGTSTP\n", no);
+        case SIGTRAP:
+            printf("(%d) SIGTRAP\n", no);
+            break;
+        case SIGABRT:
+            printf("(%d) SIGABRT\n", no);
+            break;
+        case SIGBUS:
+            printf("(%d) SIGBUS\n", no);
+            break;
+        case SIGFPE:
+            printf("(%d) SIGFPE\n", no);
+            break;
+        case SIGKILL:
+            printf("(%d) SIGKILL\n", no);
             break;
         case SIGSEGV:
             printf("(%d) SIGSEGV\n", no);
@@ -29,11 +41,21 @@ void sig_routine(int no)
         case SIGPIPE:
             printf("(%d) SIGPIPE\n", no);
             break;
-        case SIGHUP:
-            printf("(%d) SIGHUP\n", no);
+        case SIGALRM:
+            printf("(%d) SIGALRM\n", no);
             break;
-        case SIGKILL:
-            printf("(%d) SIGKILL\n", no);
+        case SIGTERM:
+            printf("(%d) SIGTERM\n", no);
+            break;
+        case SIGSTOP:
+            printf("(%d) SIGSTOP\n", no);
+            break;
+        case SIGTSTP:
+            /* CTrl + Z */
+            printf("(%d) SIGTSTP\n", no);
+            break;
+        case SIGSYS:
+            printf("(%d) SIGSYS\n", no);
             break;
         default:
             printf("(%d) ?\n", no);
@@ -42,28 +64,59 @@ void sig_routine(int no)
 
 int main(int argc, char *argv[])
 {
-    printf("SIGTERM = %2d\n", SIGTERM);
+    char buf[256];
+    int size;
+
+    printf("SIGHUP  = %2d\n", SIGHUP);
     printf("SIGINT  = %2d\n", SIGINT);
     printf("SIGQUIT = %2d\n", SIGQUIT);
-    printf("SIGTSTP = %2d\n", SIGTSTP);
+    printf("SIGTRAP = %2d\n", SIGTRAP);
+    printf("SIGABRT = %2d\n", SIGABRT);
+    printf("SIGBUS  = %2d\n", SIGBUS);
+    printf("SIGFPE  = %2d\n", SIGFPE);
+    printf("SIGKILL = %2d\n", SIGKILL);
     printf("SIGSEGV = %2d\n", SIGSEGV);
     printf("SIGPIPE = %2d\n", SIGPIPE);
-    printf("SIGHUP  = %2d\n", SIGHUP);
-    printf("SIGKILL = %2d\n", SIGKILL);
+    printf("SIGALRM = %2d\n", SIGALRM);
+    printf("SIGTERM = %2d\n", SIGTERM);
+    printf("SIGSTOP = %2d\n", SIGSTOP);
+    printf("SIGTSTP = %2d\n", SIGTSTP);
+    printf("SIGSYS  = %2d\n", SIGSYS);
     printf("\n");
     printf("My PID is %d\n", getpid()); 
     printf("\n");
 
-    signal(SIGTERM, sig_routine);
+    signal(SIGHUP,  sig_routine);
     signal(SIGINT,  sig_routine);
     signal(SIGQUIT, sig_routine);
-    signal(SIGTSTP, sig_routine);
+    signal(SIGTRAP, sig_routine);
+    signal(SIGABRT, sig_routine);
+    signal(SIGBUS,  sig_routine);
+    signal(SIGFPE,  sig_routine);
+    signal(SIGKILL, sig_routine);
     signal(SIGSEGV, sig_routine);
     signal(SIGPIPE, sig_routine);
-    signal(SIGHUP,  sig_routine);
-    signal(SIGKILL, sig_routine);
+    signal(SIGALRM, sig_routine);
+    signal(SIGTERM, sig_routine);
+    signal(SIGSTOP, sig_routine);
+    signal(SIGTSTP, sig_routine);
+    signal(SIGSYS,  sig_routine);
 
-    for (;;);
+    while (1)
+    {
+        size = read(STDIN_FILENO, buf, 255);
+        buf[size] = '\0';
+
+        if (strlen(buf) > 0)
+        {
+            buf[strlen(buf) - 1] = '\0';
+            if ((0 == strcmp("quit", buf)) ||
+                (0 == strcmp("exit", buf)))
+            {
+                break;
+            }
+        }
+    }
 
     return 0;
 }

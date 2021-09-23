@@ -1,31 +1,34 @@
-/* sleep / usleep / select */
+/* sleep / usleep / select / pthead */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/types.h>
 #include <sys/time.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/types.h>
+#include <pthread.h>
 
 
 int main(int argc, char *argv[])
 { 
     unsigned int delay[20] = 
         { 500000, 100000, 50000, 10000, 1000, 900, 500, 100, 10, 1, 0 }; 
-    //unsigned int nTimeTestSec = 0; /* sec */ 
     unsigned int nTimeTest = 0; /* usec */ 
     unsigned int nDelay = 0; /* usec */ 
-    struct timespec req; 
+    int nReduce = 0;
     struct timeval tvBegin; 
     struct timeval tvNow; 
-    fd_set rfds; 
+
+    pthread_mutex_t mutex;
+    pthread_cond_t  cond;
+    struct timespec req;
     struct timeval tv; 
+    fd_set rfds; 
     int fd = 1; 
-    int nReduce = 0;
-    int ret = 0; 
-    int i = 0; 
+    int ret; 
+    int i; 
 
 
     #if 0
@@ -38,6 +41,9 @@ int main(int argc, char *argv[])
     nDelay = atoi (argv[1]); 
     #endif 
 
+    pthread_cond_init(&cond, NULL);
+    pthread_mutex_init(&mutex, NULL);
+    
     fprintf(
         stderr,
         "   function      time(usec)    realTime     reduce\n"
@@ -68,8 +74,9 @@ int main(int argc, char *argv[])
         }
         gettimeofday(&tvNow, NULL); 
         nTimeTest = 
-            (tvNow.tv_sec - tvBegin.tv_sec) * 1000000 + tvNow.tv_usec - tvBegin.tv_usec;
-        nReduce = nTimeTest - nDelay; 
+            ((tvNow.tv_sec - tvBegin.tv_sec) * 1000000) +
+             (tvNow.tv_usec - tvBegin.tv_usec);
+        nReduce = (nTimeTest - nDelay);
         fprintf(
             stderr,
             "   usleep      %8u      %8u  %8d\n",
@@ -94,11 +101,11 @@ int main(int argc, char *argv[])
         }
         else
         {
-            gettimeofday   (&tvNow, NULL); 
+            gettimeofday(&tvNow, NULL); 
             nTimeTest = 
-                (tvNow.tv_sec - tvBegin.tv_sec) * 1000000 + tvNow.tv_usec - 
-                tvBegin.tv_usec; 
-            nReduce = nTimeTest - nDelay; 
+                ((tvNow.tv_sec - tvBegin.tv_sec) * 1000000) +
+                 (tvNow.tv_usec - tvBegin.tv_usec);
+            nReduce = (nTimeTest - nDelay);
             fprintf(
                 stderr,
                 "   nanosleep   %8u      %8u  %8d\n",
@@ -127,9 +134,9 @@ int main(int argc, char *argv[])
         } 
         gettimeofday(&tvNow, NULL);
         nTimeTest = 
-            (tvNow.tv_sec - tvBegin.tv_sec) * 1000000 + tvNow.tv_usec -
-            tvBegin.tv_usec;
-        nReduce = nTimeTest - nDelay;
+            ((tvNow.tv_sec - tvBegin.tv_sec) * 1000000) +
+             (tvNow.tv_usec - tvBegin.tv_usec);
+        nReduce = (nTimeTest - nDelay);
         fprintf(
             stderr,
             "   select      %8u      %8u  %8d\n",
@@ -137,7 +144,42 @@ int main(int argc, char *argv[])
             nTimeTest,
             nReduce
         );
+
+
+        /* [4] test pthread */
+        pthread_mutex_lock( &mutex );
+        gettimeofday(&tvBegin, NULL); 
+        req.tv_sec  = tvBegin.tv_sec;
+        req.tv_nsec = ((tvBegin.tv_usec + nDelay) * 1000);
+        ret = pthread_cond_timedwait(&cond, &mutex, &req);
+        if (ETIMEDOUT == ret)
+        {
+            gettimeofday(&tvNow, NULL); 
+            nTimeTest = 
+                ((tvNow.tv_sec - tvBegin.tv_sec) * 1000000) +
+                 (tvNow.tv_usec - tvBegin.tv_usec);
+            nReduce = (nTimeTest - nDelay);
+            fprintf(
+                stderr,
+                "   pthread     %8u      %8u  %8d\n",
+                nDelay,
+                nTimeTest,
+                nReduce
+            );
+        }
+        else if (0 != ret)
+        { 
+            fprintf(
+                stderr,
+                "   pthread       error        .           errno=%d\n",
+                ret
+            );
+        }
+        pthread_mutex_unlock( &mutex );
     }
+
+    pthread_cond_init(&cond, NULL);
+    pthread_mutex_init(&mutex, NULL);
 
     return 0;
 }

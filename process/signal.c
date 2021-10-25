@@ -35,8 +35,14 @@ void sig_routine(int no)
         case SIGKILL:
             printf("(%d) SIGKILL\n", no);
             break;
+        case SIGUSR1:
+            printf("(%d) SIGUSR1\n", no);
+            break;
         case SIGSEGV:
             printf("(%d) SIGSEGV\n", no);
+            break;
+        case SIGUSR2:
+            printf("(%d) SIGUSR2\n", no);
             break;
         case SIGPIPE:
             printf("(%d) SIGPIPE\n", no);
@@ -75,7 +81,9 @@ int main(int argc, char *argv[])
     printf("SIGBUS  = %2d\n", SIGBUS);
     printf("SIGFPE  = %2d\n", SIGFPE);
     printf("SIGKILL = %2d\n", SIGKILL);
+    printf("SIGUSR1 = %2d\n", SIGUSR1);
     printf("SIGSEGV = %2d\n", SIGSEGV);
+    printf("SIGUSR2 = %2d\n", SIGUSR2);
     printf("SIGPIPE = %2d\n", SIGPIPE);
     printf("SIGALRM = %2d\n", SIGALRM);
     printf("SIGTERM = %2d\n", SIGTERM);
@@ -94,7 +102,9 @@ int main(int argc, char *argv[])
     signal(SIGBUS,  sig_routine);
     signal(SIGFPE,  sig_routine);
     signal(SIGKILL, sig_routine);
+    signal(SIGUSR1, sig_routine);
     signal(SIGSEGV, sig_routine);
+    signal(SIGUSR2, sig_routine);
     signal(SIGPIPE, sig_routine);
     signal(SIGALRM, sig_routine);
     signal(SIGTERM, sig_routine);
@@ -115,6 +125,9 @@ int main(int argc, char *argv[])
             {
                 break;
             }
+
+            /* send signal to myself */
+            kill(getpid(), atoi(buf));
         }
     }
 

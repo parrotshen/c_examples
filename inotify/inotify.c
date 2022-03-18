@@ -9,11 +9,12 @@
 #define EVENT_SIZE   sizeof(struct inotify_event)
 #define EVENT_BUFFER ((EVENT_SIZE + 16) * 1024)
 
+char g_buf[EVENT_BUFFER];
+
 int main(int argc, char *argv[])
 { 
     struct inotify_event *event;
-    char buffer[EVENT_BUFFER];
-    int length;
+    int len;
     int fd;
     int wd;
     int i; 
@@ -42,23 +43,23 @@ int main(int argc, char *argv[])
 
     for (;;)
     {
-        memset(buffer, 0x00, EVENT_BUFFER);
+        memset(g_buf, 0x00, EVENT_BUFFER);
 
-        length = read(fd, buffer, EVENT_BUFFER);
-        if (length <= 0)
+        len = read(fd, g_buf, EVENT_BUFFER);
+        if (len <= 0)
         {
             perror( "read" );
             continue;
         }
 
-        for (i=0; i<length; )
+        for (i=0; i<len; )
         {
-            event = (struct inotify_event *)&(buffer[i]);
+            event = (struct inotify_event *)&(g_buf[i]);
 
             {
                 int mask = event->mask;
 
-                if ( event->name[0] )
+                if (( event->name ) && ( event->name[0] ))
                 {
                     printf("%s/%s\n", argv[1], event->name);
                 }

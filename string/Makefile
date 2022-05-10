@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall
 
-all: snprintf strncpy sscanf strcasecmp strtok strcat strchr strstr str2num gets
+all: snprintf strncpy sscanf strcasecmp strtok strcat strchr strstr str2num strerror gets
 
 snprintf: snprintf.c
 	$(CC) $(CFLAGS) $< -o $@
@@ -30,8 +30,11 @@ strstr: strstr.c
 str2num: str2num.c
 	$(CC) $(CFLAGS) $< -o $@
 
+strerror: strerror.c
+	$(CC) $(CFLAGS) $< -o $@
+
 gets: gets.c
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f snprintf strncpy sscanf strcasecmp strtok strcat strchr strstr str2num gets
+	rm -f snprintf strncpy sscanf strcasecmp strtok strcat strchr strstr str2num strerror gets

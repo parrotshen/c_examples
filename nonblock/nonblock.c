@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
+#include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -14,11 +15,7 @@
 //    Macro declarations
 // /////////////////////////////////////////////////////////////////////////////
 
-#define NON_BLOCK_MODE   (1)
-
-#define MAX_BUFFER_SIZE  (2047)
-#define SELECT_TOUT_SEC  (0)
-#define SELECT_TOUT_USEC (100000)
+#define NON_BLOCK_MODE 1
 
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -30,83 +27,46 @@
 //    Variables declarations
 // /////////////////////////////////////////////////////////////////////////////
 
-unsigned char g_buf[MAX_BUFFER_SIZE+1];
-int fd_client = -1;
+unsigned char g_buf[256];
 
 
 // /////////////////////////////////////////////////////////////////////////////
 //    Functions
 // /////////////////////////////////////////////////////////////////////////////
 
-void mem_dump(const void *addr, unsigned int size)
+char *timestamp(void)
 {
-    unsigned char *p = (unsigned char *)addr;
-    unsigned int   i;
+    static char tstamp[64];
+    struct timeval tv;
 
-    if (p == NULL)
-    {
-        printf("%s: NULL\n", __func__);
-        printf("\n");
-        return;
-    }
+    gettimeofday(&tv, NULL);
+    sprintf(tstamp, "[%lu.%lu]", tv.tv_sec, tv.tv_usec);
 
-    for (i=0; i<size; i++)
-    {
-        if ((i != 0) && ((i % 16) == 0))
-        {
-            printf("\n");
-        }
-
-        if ((p[i] > 0x1F) && (p[i] < 0x7F))
-        {
-            printf(" %c ", p[i]);
-        }
-        else
-        {
-            printf("%02X ", p[i]);
-        }
-    }
-    printf("\n");
-    printf(" (%u bytes)\n", size);
-    printf("\n");
-}
-
-static void _endHdlr(int arg)
-{
-    if (fd_client > 0)
-    {
-        close( fd_client );
-        fd_client = -1;
-    }
+    return tstamp;
 }
 
 int main(int argc, char *argv[])
 {
-    struct sockaddr_in  addr_client;
-    socklen_t addr_len_client = sizeof(struct sockaddr_in);
+    struct sockaddr_in  addr;
+    socklen_t addr_len = sizeof(struct sockaddr_in);
+    int fd = -1;
 
+    #if (NON_BLOCK_MODE)
     struct timeval timeout;
     fd_set flags;
-    #if (NON_BLOCK_MODE)
     int control;
     #endif
-    int retval;
+    int error;
     int size;
 
 
     if (argc < 3)
     {
-        printf("Usage: nonblock IP_ADDRESS PORT\n");
-        printf("\n");
+        printf("Usage: nonblock IP_ADDRESS PORT [-s]\n\n");
         return 0;
     }
 
-    signal(SIGINT,  _endHdlr);
-    signal(SIGKILL, _endHdlr);
-    signal(SIGTERM, _endHdlr);
-
-
-    if ((fd_client=socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    if ((fd=socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         perror( "socket" );
         return -1;
@@ -114,23 +74,30 @@ int main(int argc, char *argv[])
 
     /* set non-blocking IO mode */
     #if (NON_BLOCK_MODE)
-    control  = fcntl(fd_client, F_GETFL, 0);
+    control  = fcntl(fd, F_GETFL, 0);
     control |= O_NONBLOCK;
-    if (fcntl(fd_client, F_SETFL, control) < 0)
+    if (fcntl(fd, F_SETFL, control) < 0)
     {
         perror( "fcntl" );
-        close( fd_client );
+        close( fd );
         return -1;
     }
     #endif
 
     /* fill the sockaddr_in structure */
-    bzero(&addr_client, addr_len_client);
-    addr_client.sin_family      = AF_INET;
-    addr_client.sin_port        = htons( atoi(argv[2]) );
-    addr_client.sin_addr.s_addr = inet_addr( argv[1] );
+    bzero(&addr, addr_len);
+    addr.sin_family      = AF_INET;
+    addr.sin_port        = htons( atoi(argv[2]) );
+    addr.sin_addr.s_addr = inet_addr( argv[1] );
 
-    if (connect(fd_client, (struct sockaddr *)&addr_client, addr_len_client) < 0)
+    printf(
+        "%s TCP connect to %s:%s\n",
+        timestamp(),
+        argv[1],
+        argv[2]
+    );
+
+    if (connect(fd, (struct sockaddr *)&addr, addr_len) < 0)
     {
         #if (NON_BLOCK_MODE)
         if (EINPROGRESS == errno)
@@ -139,106 +106,128 @@ int main(int argc, char *argv[])
             timeout.tv_usec = 0;
 
             FD_ZERO( &flags ); 
-            FD_SET(fd_client, &flags);
+            FD_SET(fd, &flags);
 
-            if (select(fd_client+1, NULL, &flags, NULL, &timeout) > 0)
+            printf("%s TCP connect ... wait\n", timestamp());
+
+            if (select(fd+1, NULL, &flags, NULL, &timeout) > 0)
             {
                 socklen_t len = sizeof( int );
                 int val = 0;
 
+                printf("%s TCP connect ... ready\n", timestamp());
+
                 /* get the error status of connection */
-                retval = getsockopt(fd_client, SOL_SOCKET, SO_ERROR, &val, &len);
-                if (retval != 0)
+                error = getsockopt(fd, SOL_SOCKET, SO_ERROR, &val, &len);
+                if (error != 0)
                 {
+                    printf("%s TCP connect ... fail\n", timestamp());
                     perror( "getsockopt" );
-                    close( fd_client );
+                    close( fd );
                     return -1;
                 }
                 if (val != 0)
                 {
-                    printf("TCP connect ... failed (%d)\n", val);
-                    close( fd_client );
+                    printf("%s TCP connect ... fail (%d)\n", timestamp(), val);
+                    close( fd );
                     return -1;
                 }
             }
             else
             {
+                printf("%s TCP connect ... fail\n", timestamp());
                 perror( "select" );
-                close( fd_client );
+                close( fd );
                 return -1;
             }
         }
         else
         #endif
         {
+            printf("%s TCP connect ... fail\n", timestamp());
             perror( "connect" );
-            close( fd_client );
+            close( fd );
             return -1;
         }
     }
 
-    printf("TCP connect to %s:%s\n\n", argv[1], argv[2]);
+    printf("%s TCP connect ... accept\n\n", timestamp());
 
-    /* restore the IO mode */
-    #if (NON_BLOCK_MODE)
-    control &= ~O_NONBLOCK;
-    if (fcntl(fd_client, F_SETFL, control) < 0)
+    if ((argc > 3) && (0 == strcmp("-s", argv[3])))
     {
-        perror( "fcntl" );
-        close( fd_client );
-        return -1;
-    }
-    #endif
+        sprintf((char *)g_buf, "Hello");
+        size = strlen((char *)g_buf);
 
-    timeout.tv_sec  = SELECT_TOUT_SEC;
-    timeout.tv_usec = SELECT_TOUT_USEC;
+        printf("-> %s\n", g_buf);
+        send(fd, g_buf, size, 0);
+    }
+
+    printf("%s TCP receive from server\n", timestamp());
+
+    size = recv(fd, g_buf, 255, 0);
+    if (size > 0)
+    {
+        g_buf[size] = 0x00;
+        printf("<- %s\n", (char *)g_buf);
+        close( fd );
+        return 0;
+    }
+
+    printf("%s TCP receive ... fail\n", timestamp());
+    perror( "recv" );
+
+    #if (NON_BLOCK_MODE)
+    timeout.tv_sec  = 1;
+    timeout.tv_usec = 0;
 
     FD_ZERO( &flags );
     while ( 1 )
     {
-        FD_CLR(STDIN_FILENO, &flags);
-        FD_SET(STDIN_FILENO, &flags);
-        FD_CLR(fd_client, &flags);
-        FD_SET(fd_client, &flags);
+        FD_CLR(fd, &flags);
+        FD_SET(fd, &flags);
 
-        retval = select(fd_client+1, &flags, NULL, NULL, &timeout);
-        if (retval > 0)
+        printf("%s TCP receive ... wait\n", timestamp());
+
+        error = select(fd+1, &flags, NULL, NULL, &timeout);
+        if (error > 0)
         {
-            if ( FD_ISSET(STDIN_FILENO, &flags) )
-            {
-                size = read(STDIN_FILENO, g_buf, MAX_BUFFER_SIZE);
-                if (size > 0)
-                {
-                    send(fd_client, g_buf, size, 0);
-                }
-            }
+            printf("%s TCP receive ... ready\n", timestamp());
 
-            if ( FD_ISSET(fd_client, &flags) )
+            if ( FD_ISSET(fd, &flags) )
             {
-                size = recv(fd_client, g_buf, MAX_BUFFER_SIZE, 0);
+                size = recv(fd, g_buf, 255, 0);
                 if (size > 0)
                 {
                     g_buf[size] = 0x00;
-                    printf("RECV> %s\n", g_buf);
+                    printf("<- %s\n", (char *)g_buf);
+                    close( fd );
+                    return 0;
                 }
+
+                printf("%s TCP receive ... fail\n", timestamp());
+                perror( "recv" );
+                close( fd );
+                return -1;
             }
         }
-        else if (retval == 0)
+        else if (error == 0)
         {
-            timeout.tv_sec  = SELECT_TOUT_SEC;
-            timeout.tv_usec = SELECT_TOUT_USEC;
+            printf("%s TCP receive ... timeout\n", timestamp());
+            timeout.tv_sec  = 1;
+            timeout.tv_usec = 0;
         }
         else
         {
+            printf("%s TCP receive ... fail\n", timestamp());
             perror( "select" );
-            break;
+            close( fd );
+            return -1;
         }
     }
+    #endif
 
-    if (fd_client > 0)
-    {
-        close( fd_client );
-    }
+    printf("%s TCP disconnect\n", timestamp());
+    close( fd );
 
     return 0;
 }

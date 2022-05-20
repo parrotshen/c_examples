@@ -5,6 +5,7 @@ APPS += complex digit swap
 APPS += euler pi prime random
 APPS += gcd_lcm factorize factorial
 APPS += powxy logx nthroot
+APPS += sinewave
 
 all: $(APPS)
 
@@ -45,6 +46,9 @@ logx: logx.c
 	$(CC) $(CFLAGS) -lm -o $@ $<
 
 nthroot: nthroot.c
+	$(CC) $(CFLAGS) -lm -o $@ $<
+
+sinewave: sinewave.c
 	$(CC) $(CFLAGS) -lm -o $@ $<
 
 clean:

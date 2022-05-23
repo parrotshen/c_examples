@@ -1,79 +1,55 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <complex.h>
+#include <math.h>
 
-
-typedef struct _tComplex
-{
-    double  real;
-    double  imag;
-} tComplex;
-
-
-void cadd(tComplex *X, tComplex *Y, tComplex *Z)
-{
-    /*
-    *  (a + bi) + (c + di) = (a + c) + (b + d)i
-    */
-    Z->real = X->real + Y->real;
-    Z->imag = X->imag + Y->imag;
-}
-
-void csub(tComplex *X, tComplex *Y, tComplex *Z)
-{
-    /*
-    *  (a + bi) - (c + di) = (a - c) + (b - d)i
-    */
-    Z->real = X->real - Y->real;
-    Z->imag = X->imag - Y->imag;
-}
-
-void cmul(tComplex *X, tComplex *Y, tComplex *Z)
-{
-    /*
-    *   (a + bi) * (c + di)
-    * = (a*c - b*d) + (b*c + a*d)i
-    */
-    Z->real = (X->real * Y->real) - (X->imag * Y->imag);
-    Z->imag = (X->imag * Y->real) + (X->real * Y->imag);
-}
-
-void cdiv(tComplex *X, tComplex *Y, tComplex *Z)
-{
-    /*
-    *   (a + bi) / (c + di)
-    * = ((a*c + b*d)/(c*c + d*d)) + ((b*c - a*d)/(c*c + d*d))i
-    */
-    Z->real
-     = ((X->real * Y->real) + (X->imag * Y->imag)) / ((Y->real * Y->real) + (Y->imag * Y->imag));
-    Z->imag
-     = ((X->imag * Y->real) - (X->real * Y->imag)) / ((Y->real * Y->real) + (Y->imag * Y->imag));
-}
+#ifndef M_PI
+const double M_PI = 3.14159265358979;
+#endif
 
 int main(int argc, char *argv[])
 {
-    tComplex X = { .real = 444, .imag = 333 };
-    tComplex Y = { .real = 222, .imag = 111 };
-    tComplex Z;
+    double complex X = 444 + 333*I;
+    double complex Y = 222 + 111*I;
+    double complex Z;
+    double phase;
+    double degree;
 
-    printf("X = %f + (%f)i\n", X.real, X.imag);
-    printf("Y = %f + (%f)i\n", Y.real, Y.imag);
+    printf("X = %f + (%f)i\n", creal(X), cimag(X));
+    printf("Y = %f + (%f)i\n", creal(Y), cimag(Y));
     printf("\n");
 
     printf("Addition:\n");
-    cadd(&X, &Y, &Z);
-    printf("X + Y = %f + (%f)i\n\n", Z.real, Z.imag);
+    Z = X + Y;
+    printf("X + Y = %f + (%f)i\n\n", creal(Z), cimag(Z));
 
     printf("Subtraction:\n");
-    csub(&X, &Y, &Z);
-    printf("X - Y = %f + (%f)i\n\n", Z.real, Z.imag);
+    Z = X - Y;
+    printf("X - Y = %f + (%f)i\n\n", creal(Z), cimag(Z));
 
     printf("Multiplication:\n");
-    cmul(&X, &Y, &Z);
-    printf("X * Y = %f + (%f)i\n\n", Z.real, Z.imag);
+    Z = X * Y;
+    printf("X * Y = %f + (%f)i\n\n", creal(Z), cimag(Z));
 
     printf("Divison:\n");
-    cdiv(&X, &Y, &Z);
-    printf("X / Y = %f + (%f)i\n\n", Z.real, Z.imag);
+    Z = X / Y;
+    printf("X / Y = %f + (%f)i\n\n", creal(Z), cimag(Z));
+
+    printf("Conjugate:\n");
+    printf("~X = %f + (%f)i\n", creal( conj(X) ), cimag( conj(X) ));
+    printf("~Y = %f + (%f)i\n\n", creal( conj(Y) ), cimag( conj(Y) ));
+
+    printf("Absolute:\n");
+    printf("|X| = %f\n", cabs(X));
+    printf("|Y| = %f\n\n", cabs(Y));
+
+    printf("Phase:\n");
+    phase = carg(X);
+    degree = (360 * phase) / (2 * M_PI);
+    printf("psi(X) = %f (%f degree)\n", phase, degree);
+    phase = carg(Y);
+    degree = (360 * phase) / (2 * M_PI);
+    printf("psi(Y) = %f (%f degree)\n\n", phase, degree);
 
     return 0;
 }

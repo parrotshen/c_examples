@@ -10,7 +10,7 @@ APPS += sinewave
 all: $(APPS)
 
 complex: complex.c
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -lm -o $@ $<
 
 digit: digit.c
 	$(CC) $(CFLAGS) -o $@ $<

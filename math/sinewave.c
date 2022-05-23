@@ -25,22 +25,25 @@ static void help(void)
 {
     printf("Usage: sinewave [OPTION]...\n");
     printf("\n");
-    printf("  -a AMPLITUDE\n");
-    printf("  -f FREQUENCY (Hz)\n");
-    printf("  -p PHASE (degree)\n");
-    printf("  -s SAMPLING\n");
-    printf("  -t TIME (seconds)\n");
+    printf("  -a AMPL   Sine wave amplitude.\n");
+    printf("  -p PHAS   Sine wave phase (degree).\n");
+    printf("  -f FREQ   Sine wave frequency (Hz).\n");
+    printf("  -s FREQ   Sampling frequency (Hz).\n");
+    printf("  -t TIME   Signal timeline (seconds).\n");
+    printf("  -x        Signal only (without timeline).\n");
+    printf("  -h        Show this help message.\n");
     printf("\n");
 }
 
 int main(int argc, char *argv[])
 {
     int amplitude = 1;
-    int frequency = 1;
     int degree = 0;
     double phase = 0;
-    int fsample = 64;
-    int totaltime = 1;
+    int frequency = 1;
+    int fsampling = 64;
+    int timeline = 1;
+    int xFlag = 0;
 
     FILE *pFile;
     double Ts;
@@ -52,25 +55,28 @@ int main(int argc, char *argv[])
 
 
     opterr = 0;
-    while ((opt=getopt(argc, argv, "a:f:p:s:t:h")) != -1)
+    while ((opt=getopt(argc, argv, "a:p:f:s:t:xh")) != -1)
     {
         switch ( opt )
         {
             case 'a':
                 amplitude = atoi( optarg );
                 break;
-            case 'f':
-                frequency = atoi( optarg );
-                break;
             case 'p':
                 degree = atoi( optarg );
                 phase = ((degree * M_PI) / 180);
                 break;
+            case 'f':
+                frequency = atoi( optarg );
+                break;
             case 's':
-                fsample = atoi( optarg );
+                fsampling = atoi( optarg );
                 break;
             case 't':
-                totaltime = atoi( optarg );
+                timeline = atoi( optarg );
+                break;
+            case 'x':
+                xFlag = 1;
                 break;
             case 'h':
             default:
@@ -79,18 +85,18 @@ int main(int argc, char *argv[])
         }
     }
 
-    Ts = (1 / (double)fsample);
-    samples = ceil(totaltime / Ts);
+    Ts = (1 / (double)fsampling);
+    samples = ceil(timeline / Ts);
 
-    printf("Sampling frequency %d (Hz)\n", fsample);
+    printf("Sampling frequency %d (Hz)\n", fsampling);
     printf("Frequency          %d (Hz)\n", frequency);
     printf("Phase              %d (degree)\n", degree);
     printf("Amplitude          %d\n", amplitude);
-    printf("Total time         %d (sec)\n\n", totaltime);
+    printf("Timeline           %d (sec)\n\n", timeline);
 
     if ((pFile=fopen("sinewave.txt", "w")) == NULL)
     {
-        printf("ERR: cannot open sinewave.txt\n");
+        printf("ERR: cannot open 'sinewave.txt'\n");
     }
 
     t = 0;
@@ -98,7 +104,17 @@ int main(int argc, char *argv[])
     {
         x = amplitude * sin((2 * M_PI * frequency * t) + phase);
         t += Ts;
-        if ( pFile ) fprintf(pFile, "%lf %lf\n", t, x);
+        if ( pFile )
+        {
+            if ( xFlag )
+            {
+                fprintf(pFile, "%lf\n", x);
+            }
+            else
+            {
+                fprintf(pFile, "%lf %lf\n", t, x);
+            }
+        }
         if (i < 16) printf("%lf\n", x);
     }
 

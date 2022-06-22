@@ -23,12 +23,11 @@ void timeout(int arg)
     if ( g_oneshot )
     {
         printf(
-            "Timeout ... %02d:%02d:%02d (one-shot)\n",
+            "Timeout ... %02d:%02d:%02d (one shot)\n",
             nPtr->tm_hour,
             nPtr->tm_min,
             nPtr->tm_sec
         );
-        timer_delete( g_tid );
     }
     else
     {
@@ -45,12 +44,32 @@ int main(int argc, char *argv[])
 {
     struct sigevent sev;
     struct itimerspec its;
+    int ch;
 
 
-    if (argc > 1)
+    opterr = 0;
+    while ((ch=getopt(argc, argv, "t:sh")) != -1)
     {
-        g_oneshot = atoi( argv[1] );
+        switch ( ch )
+        {
+            case 't':
+                g_nsec = strtoull(optarg, NULL, 10);
+                break;
+            case 's':
+                g_oneshot = 1;
+                break;
+            case 'h':
+            default:
+                printf("Usage: timer [OPTION]...\n");
+                printf("\n");
+                printf("  -t NSEC   Timeout in nsec(s).\n");
+                printf("  -s        One shot mode.\n");
+                printf("  -h        Show the help message.\n");
+                printf("\n");
+                exit(0);
+        }
     }
+
 
     signal(g_signo, timeout);
 
@@ -64,10 +83,10 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    its.it_value.tv_sec = (g_nsec / 1000000000);
+    its.it_value.tv_sec  = (g_nsec / 1000000000);
     its.it_value.tv_nsec = (g_nsec % 1000000000);
-    its.it_interval.tv_sec = its.it_value.tv_sec;
-    its.it_interval.tv_nsec = its.it_value.tv_nsec;
+    its.it_interval.tv_sec  = (g_oneshot ? 0 : its.it_value.tv_sec);
+    its.it_interval.tv_nsec = (g_oneshot ? 0 : its.it_value.tv_nsec);
 
     if (timer_settime(g_tid, 0, &its, NULL) != 0)
     {
@@ -81,8 +100,8 @@ int main(int argc, char *argv[])
     );
     printf(
         "[Timer value] %lu.%lu (sec)\n\n",
-        its.it_interval.tv_sec,
-        its.it_interval.tv_nsec
+        its.it_value.tv_sec,
+        its.it_value.tv_nsec
     );
 
     getchar();

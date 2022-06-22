@@ -7,7 +7,6 @@ int main(int argc, char *argv[])
 {
     int a = 1234;
     int b = 5678;
-    int c;
 
     if (3 == argc)
     {
@@ -22,9 +21,9 @@ int main(int argc, char *argv[])
     printf("a = %d\n", a);
     printf("b = %d\n\n", b);
 
-    c = a ^ b;
-    a = c ^ a;
-    b = c ^ b;
+    a = a ^ b;
+    b = b ^ a;
+    a = a ^ b;
     printf("swap:\n");
     printf("a = %d\n", a);
     printf("b = %d\n\n", b);

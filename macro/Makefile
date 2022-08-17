@@ -1,6 +1,6 @@
 CC = gcc
 
-all: example predefined poundsign ambiguous
+all: example predefined poundsign ambiguous vaargs
 
 example: example.o
 	$(CC) $< -o $@
@@ -14,10 +14,13 @@ poundsign: poundsign.o
 ambiguous: ambiguous.o
 	$(CC) $< -o $@
 
+vaargs: vaargs.o
+	$(CC) $< -o $@
+
 %.o: %.c
 	$(CC) -Wall -c $< -o $@
 	$(CC) -Wall -E $< > $(@:.o=.E.c)
 
 clean:
-	rm -f example predefined poundsign ambiguous
+	rm -f example predefined poundsign ambiguous vaargs
 	rm -f *.o

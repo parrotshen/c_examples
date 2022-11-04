@@ -14,12 +14,11 @@
 
 int main(int argc, char *argv[])
 {
-    struct tm *nPtr; 
     time_t t = 0;
 
     if (argc < 2)
     {
-        printf("Usage: asctime INTEGER_VALUE\n");
+        printf("Usage: ctime INTEGER_VALUE\n");
         printf("\n");
         return 0;
     }
@@ -34,9 +33,7 @@ int main(int argc, char *argv[])
         t = (time_t)atoi( argv[1] );
     }
 
-    nPtr = localtime( &t ); 
-
-    printf("%s", asctime( nPtr ));
+    printf("%s", ctime( &t ));
 
     return 0;
 }

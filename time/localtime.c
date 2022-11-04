@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 
     if (argc < 2)
     {
-        printf("Usage: gmtime INTEGER_VALUE\n");
+        printf("Usage: localtime INTEGER_VALUE\n");
         printf("\n");
         return 0;
     }
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
         t = (time_t)atoi( argv[1] );
     }
 
-    nPtr = gmtime( &t );
+    nPtr = localtime( &t );
 
     printf("%s", asctime( nPtr ));
     printf("[tm_sec ] %d\n", nPtr->tm_sec);          /* 0 ~ 59 */

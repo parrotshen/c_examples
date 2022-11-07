@@ -4,11 +4,11 @@
 
 int main(int argc, char *argv[])
 {
-    time_t sec;
+    time_t now;
 
-    sec = time( NULL );
+    now = time( NULL );
 
-    printf("%ld (seconds since January 1, 1970)\n", sec);
+    printf("%ld (seconds since January 1, 1970)\n", now);
 
     return 0;
 }

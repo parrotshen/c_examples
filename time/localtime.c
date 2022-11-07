@@ -15,16 +15,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if ((strlen(argv[1]) > 2) &&
-        (argv[1][0] == '0') && (argv[1][1] == 'x'))
-    {
-        sscanf(argv[1], "0x%lx", &t);
-    }
-    else
-    {
-        t = (time_t)atoi( argv[1] );
-    }
-
+    t = strtoul(argv[1], NULL, 0);
     nPtr = localtime( &t );
 
     printf("%s", asctime( nPtr ));

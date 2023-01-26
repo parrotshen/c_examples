@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <errno.h>
 
+pthread_t thread[3];
 pthread_attr_t tattr;
-pthread_t tid[3];
 
 void *thread_routine(void *arg)
 {
@@ -12,48 +13,68 @@ void *thread_routine(void *arg)
     int  loop;
     int  i;
 
-    loop = ((ch - 'A') + 8);
+    pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+
+    loop = ((ch - 'A') + 4);
+    printf("thread[%c] ... start (loop %d)\n", ch, loop);
+
     for (i=0; i<loop; i++)
     {
-        printf("thread[%c] ... %d\n", ch, i);
+        pthread_testcancel();
         sleep(1);
+        pthread_testcancel();
+        printf("thread[%c] ... %d\n", ch, (i + 1));
     }
 
     printf("thread[%c] ... end\n", ch);
-    pthread_exit(0);
+
+    pthread_exit(NULL);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    char arg[3] = { 'A', 'B', 'C' };
-    int  retval;
+    char id[3] = { 'A', 'B', 'C' };
+    int  loop = 5;
+    int  error;
     int  i;
 
-    printf("main ........ start\n");
+    printf("main ........ start (loop %d)\n", loop);
 
     for (i=0; i<3; i++)
     {
         /* initialized with default attributes */
-        retval = pthread_attr_init( &tattr );
+        pthread_attr_init( &tattr );
+        pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE);
 
         /* default behavior specified*/
-        retval = pthread_create(&(tid[i]), &tattr, thread_routine, &(arg[i]));
-        if (retval != 0)
+        error = pthread_create(&(thread[i]), &tattr, thread_routine, &(id[i]));
+        if (error != 0)
         {
-            printf("ERR: fail to create pthread[%c] (%d)\n", arg[i], retval);
+            printf("ERR: fail to create pthread[%c]\n", id[i]);
+            perror( "pthread_create" );
         }
+
+        pthread_attr_destroy( &tattr );
     }
 
-    for (i=0; i<5; i++)
+    for (i=0; i<loop; i++)
     {
-        printf("main ........ %d\n", i);
         sleep(1);
+        printf("main ........ %d\n", (i + 1));
     }
 
     /* do something else for a while */
+    if (argc > 1)
+    {
+        for (i=0; i<3; i++)
+        {
+            printf("thread[%c] ... cancel\n", id[i]);
+            pthread_cancel( thread[i] );
+        }
+    }
     for (i=0; i<3; i++)
     {
-        pthread_join(tid[i], NULL);
+        pthread_join(thread[i], NULL);
     }
 
     /* it's now safe to use result */

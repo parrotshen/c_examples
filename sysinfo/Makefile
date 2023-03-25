@@ -1,6 +1,9 @@
 CC = gcc
 
-all: sysinfo rlimit rusage lsps lsnet
+all: sysconf sysinfo rlimit rusage lsps lsnet
+
+sysconf: sysconf.c
+	$(CC) -Wall sysconf.c -o sysconf
 
 sysinfo: sysinfo.c
 	$(CC) -Wall sysinfo.c -o sysinfo
@@ -18,4 +21,4 @@ lsnet: lsnet.c
 	$(CC) -Wall lsnet.c -o lsnet
 
 clean:
-	rm -f sysinfo rlimit rusage lsps lsnet
+	rm -f sysconf sysinfo rlimit rusage lsps lsnet

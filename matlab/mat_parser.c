@@ -4,8 +4,8 @@
 #include <sys/stat.h>
 
 
-#define ALIGN_8_BYTES(len) \
-    (((len % 8) != 0) ? (((len >> 3) + 1) << 3) : len)
+#define ALIGN_8_BYTES(n) \
+    (((n % 8) != 0) ? (((n >> 3) + 1) << 3) : n)
 
 
 typedef enum
@@ -38,7 +38,7 @@ typedef struct _tMatTag
 {
     unsigned int   type; /* tMatType */
     unsigned int   bytes;
-    int            align;
+    int            small;
 } tMatTag;
 
 
@@ -166,7 +166,7 @@ int mat_readTag(FILE *pFile, tMatTag *pTag, int debug)
     {
         /* small data element */
         pTag->type &= 0xFFFF;
-        pTag->align = 4;
+        pTag->small = 1;
         return 0;
     }
 
@@ -176,30 +176,37 @@ int mat_readTag(FILE *pFile, tMatTag *pTag, int debug)
         return -1;
     }
 
-    pTag->align = 8;
+    pTag->small = 0;
     return 0;
 }
 
-int mat_readArray(FILE *pFile, unsigned char *pBuf, int bufLen, int debug)
+int mat_readArray(FILE *pFile, int debug)
 {
+    int error = -1;
+    unsigned char *pBuf;
+    int bufLen;
+    int i;
+
     tMatTag tag;
-    unsigned int  len;
+    unsigned int  bytes;
     unsigned char flags;
     unsigned char class;
     unsigned int  dim;
     unsigned int  num;
-    int i;
+
+    bufLen = 256;
+    pBuf = malloc( bufLen );
 
     /* [1] Array Flags */
     if (mat_readTag(pFile, &tag, __LINE__) != 0)
     {
         printf("ERR: read Array Flags at %d\n", debug);
-        return -1;
+        goto _EXIT;
     }
 
     printf("Array Flags: %u %u\n", tag.type, tag.bytes);
-    len = ((tag.align == 8) ? ALIGN_8_BYTES( tag.bytes ) : 4);
-    fread(pBuf, len, 1, pFile);
+    bytes = ((tag.small == 0) ? ALIGN_8_BYTES( tag.bytes ) : 4);
+    fread(pBuf, bytes, 1, pFile);
     class = pBuf[0];
     flags = pBuf[1];
     printf(" flags %d\n class %d\n", flags, class);
@@ -208,12 +215,12 @@ int mat_readArray(FILE *pFile, unsigned char *pBuf, int bufLen, int debug)
     if (mat_readTag(pFile, &tag, __LINE__) != 0)
     {
         printf("ERR: Dimensions Array at %d\n", debug);
-        return -1;
+        goto _EXIT;
     }
 
     printf("Dimensions Array: %u %u\n", tag.type, tag.bytes);
-    len = ((tag.align == 8) ? ALIGN_8_BYTES( tag.bytes ) : 4);
-    fread(pBuf, len, 1, pFile);
+    bytes = ((tag.small == 0) ? ALIGN_8_BYTES( tag.bytes ) : 4);
+    fread(pBuf, bytes, 1, pFile);
     for (i=0; i<tag.bytes; i+=4)
     {
         dim = *((unsigned int *)(pBuf + i));
@@ -226,12 +233,12 @@ int mat_readArray(FILE *pFile, unsigned char *pBuf, int bufLen, int debug)
     if (mat_readTag(pFile, &tag, __LINE__) != 0)
     {
         printf("ERR: Array Name at %d\n", debug);
-        return -1;
+        goto _EXIT;
     }
 
     printf("Array Name: %u %u\n", tag.type, tag.bytes);
-    len = ((tag.align == 8) ? ALIGN_8_BYTES( tag.bytes ) : 4);
-    fread(pBuf, len, 1, pFile);
+    bytes = ((tag.small == 0) ? ALIGN_8_BYTES( tag.bytes ) : 4);
+    fread(pBuf, bytes, 1, pFile);
     pBuf[tag.bytes] = 0x0;
     printf(" \"%s\"\n", (char *)pBuf);
 
@@ -241,12 +248,12 @@ int mat_readArray(FILE *pFile, unsigned char *pBuf, int bufLen, int debug)
         if (mat_readTag(pFile, &tag, __LINE__) != 0)
         {
             printf("ERR: Field Name Length at %d\n", debug);
-            return -1;
+            goto _EXIT;
         }
 
         printf("Field Name Length: %u %u\n", tag.type, tag.bytes);
-        len = ((tag.align == 8) ? ALIGN_8_BYTES( tag.bytes ) : 4);
-        fread(pBuf, len, 1, pFile);
+        bytes = ((tag.small == 0) ? ALIGN_8_BYTES( tag.bytes ) : 4);
+        fread(pBuf, bytes, 1, pFile);
         num = *((int *)pBuf);
         printf(" %d\n", num);
 
@@ -254,13 +261,19 @@ int mat_readArray(FILE *pFile, unsigned char *pBuf, int bufLen, int debug)
         if (mat_readTag(pFile, &tag, __LINE__) != 0)
         {
             printf("ERR: Field Name Length at %d\n", debug);
-            return -1;
+            goto _EXIT;
         }
 
         printf("Field Names: %u %u\n", tag.type, tag.bytes);
-        len = ((tag.align == 8) ? ALIGN_8_BYTES( tag.bytes ) : 4);
-        fread(pBuf, len, 1, pFile);
-        for (i=0; i<len; i+=num)
+        bytes = ((tag.small == 0) ? ALIGN_8_BYTES( tag.bytes ) : 4);
+        if (bytes > bufLen)
+        {
+            free( pBuf );
+            pBuf = malloc( bytes );
+            bufLen = bytes;
+        }
+        fread(pBuf, bytes, 1, pFile);
+        for (i=0; i<bytes; i+=num)
         {
             printf(" %s\n", (char *)(pBuf + i));
         }
@@ -272,21 +285,21 @@ int mat_readArray(FILE *pFile, unsigned char *pBuf, int bufLen, int debug)
             if (mat_readTag(pFile, &tag, __LINE__) != 0)
             {
                 printf("ERR: Fields at %d\n", debug);
-                return -1;
+                goto _EXIT;
             }
 
             if (tag.type != miMATRIX)
             {
                 printf("ERR: not miMATRIX (%d)\n", tag.type);
-                return -1;
+                goto _EXIT;
             }
 
             printf("Fields: %u %u\n", tag.type, tag.bytes);
-            len = ((tag.align == 8) ? ALIGN_8_BYTES( tag.bytes ) : 4);
-            if (mat_readArray(pFile, pBuf, len, __LINE__) != 0)
+            bytes = ((tag.small == 0) ? ALIGN_8_BYTES( tag.bytes ) : 4);
+            if (mat_readArray(pFile, __LINE__) != 0)
             {
                 printf("ERR: subelement array at %d\n", debug);
-                return -1;
+                goto _EXIT;
             }
             printf("\n");
         }
@@ -297,12 +310,18 @@ int mat_readArray(FILE *pFile, unsigned char *pBuf, int bufLen, int debug)
         if (mat_readTag(pFile, &tag, __LINE__) != 0)
         {
             printf("ERR: Real Part at %d\n", debug);
-            return -1;
+            goto _EXIT;
         }
 
         printf("Real Part: %u %u\n", tag.type, tag.bytes);
-        len = ((tag.align == 8) ? ALIGN_8_BYTES( tag.bytes ) : 4);
-        fread(pBuf, len, 1, pFile);
+        bytes = ((tag.small == 0) ? ALIGN_8_BYTES( tag.bytes ) : 4);
+        if (bytes > bufLen)
+        {
+            free( pBuf );
+            pBuf = malloc( bytes );
+            bufLen = bytes;
+        }
+        fread(pBuf, bytes, 1, pFile);
         mat_printArray(pBuf, tag.bytes, tag.type, 3);
 
         /* [5] Imaginary Part */
@@ -311,37 +330,50 @@ int mat_readArray(FILE *pFile, unsigned char *pBuf, int bufLen, int debug)
             if (mat_readTag(pFile, &tag, __LINE__) != 0)
             {
                 printf("ERR: Imaginary Part at %d\n", debug);
-                return -1;
+                goto _EXIT;
             }
 
             printf("Imaginary Part: %u %u\n", tag.type, tag.bytes);
-            len = ((tag.align == 8) ? ALIGN_8_BYTES( tag.bytes ) : 4);
-            fread(pBuf, len, 1, pFile);
+            bytes = ((tag.small == 0) ? ALIGN_8_BYTES( tag.bytes ) : 4);
+            if (bytes > bufLen)
+            {
+                free( pBuf );
+                pBuf = malloc( bytes );
+                bufLen = bytes;
+            }
+            fread(pBuf, bytes, 1, pFile);
             mat_printArray(pBuf, tag.bytes, tag.type, 3);
         }
     }
 
-    return 0;
+    error = 0;
+_EXIT:
+    free( pBuf );
+    return error;
 }
 
 int mat_parserFile(char *pInput)
 {
     FILE *pFile = NULL;
     struct stat info;
-    int count = 1;
-    int matLen;
-
-    unsigned char *pBuf = NULL;
-    int bufLen = 0;
-    int bufLenMax = 0;
 
     tMatHdr hdr;
     tMatTag tag;
+    unsigned char buf[8];
+    int matLen;
+    int count;
+    int i;
 
 
     if (stat(pInput, &info) != 0)
     {
         perror( "stat" );
+        return -1;
+    }
+
+    if (info.st_size < (sizeof(tMatHdr) + 8))
+    {
+        printf("ERR: incorrect file size %ld\n", info.st_size);
         return -1;
     }
 
@@ -358,6 +390,7 @@ int mat_parserFile(char *pInput)
         fclose( pFile );
         return -1;
     }
+    matLen = info.st_size - sizeof(tMatHdr);
 
     if ((hdr.text[0] == 0x0) ||
         (hdr.text[1] == 0x0) ||
@@ -378,123 +411,187 @@ int mat_parserFile(char *pInput)
         ((0x4D49 == hdr.flag[1]) ? "little endian" : "big endian")
     );
 
-    matLen = info.st_size - sizeof(tMatHdr);
-
+    count = 1;
     while (matLen > 0)
     {
         if (mat_readTag(pFile, &tag, __LINE__) != 0)
         {
             printf("ERR: read Data Element #%d\n", count);
-            goto _EXIT;
+            fclose( pFile );
+            return -1;
         }
+        matLen -= ((tag.small == 0) ? 8 : 4);
 
-        matLen -= tag.align;
         printf("Data Element Tag:\n %u\n %u\n\n", tag.type, tag.bytes);
 
-        bufLen = ((tag.align == 8) ? ALIGN_8_BYTES( tag.bytes ) : 4);
-        if (NULL == pBuf)
+        if (tag.bytes > 0)
         {
-            pBuf = malloc( bufLen );
-            bufLenMax = bufLen;
-        }
-        else if (bufLen > bufLenMax)
-        {
-            free( pBuf );
-            pBuf = malloc( bufLen );
-            bufLenMax = bufLen;
-        }
+            int bytes = ALIGN_8_BYTES( tag.bytes ); /* actual data size */
+            int num;
 
-        switch ( tag.type )
-        {
-            case miINT8:
+            switch ( tag.type )
             {
-                fread(pBuf, bufLen, 1, pFile);
-                printf("[miINT8] %d\n", *((char *)pBuf));
-                break;
-            }
-            case miUINT8:
-            {
-                fread(pBuf, bufLen, 1, pFile);
-                printf("[miUINT8] %u\n", *((unsigned char *)pBuf));
-                break;
-            }
-            case miINT16:
-            {
-                fread(pBuf, bufLen, 1, pFile);
-                printf("[miINT16] %d\n", *((short *)pBuf));
-                break;
-            }
-            case miUINT16:
-            {
-                fread(pBuf, bufLen, 1, pFile);
-                printf("[miUINT16] %u\n", *((unsigned short *)pBuf));
-                break;
-            }
-            case miINT32:
-            {
-                fread(pBuf, bufLen, 1, pFile);
-                printf("[miINT32] %d\n", *((int *)pBuf));
-                break;
-            }
-            case miUINT32:
-            {
-                fread(pBuf, bufLen, 1, pFile);
-                printf("[miUINT32] %u\n", *((unsigned int *)pBuf));
-                break;
-            }
-            case miSINGLE:
-            {
-                fread(pBuf, bufLen, 1, pFile);
-                printf("[miSINGLE] %f\n", *((float *)pBuf));
-                break;
-            }
-            case miDOUBLE:
-            {
-                fread(pBuf, bufLen, 1, pFile);
-                printf("[miDOUBLE] %f\n", *((double *)pBuf));
-                break;
-            }
-            case miINT64:
-            {
-                fread(pBuf, bufLen, 1, pFile);
-                printf("[miINT64] %lld\n", *((long long *)pBuf));
-                break;
-            }
-            case miUINT64:
-            {
-                fread(pBuf, bufLen, 1, pFile);
-                printf("[miUINT64] %llu\n", *((unsigned long long *)pBuf));
-                break;
-            }
-            case miMATRIX:
-            {
-                printf("[miMATRIX]\n");
-                if (mat_readArray(pFile, pBuf, bufLen, __LINE__) != 0)
+                case miINT8:
                 {
-                    printf("ERR: Fields at %d\n", __LINE__);
-                    goto _EXIT;
+                    num = (bytes);
+                    for (i=0; i<num; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                        if (i == 0) printf("[miINT8] %d\n", *((char *)buf));
+                    }
+                    break;
                 }
-                break;
+                case miUINT8:
+                {
+                    num = (bytes);
+                    for (i=0; i<num; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                        if (i == 0) printf("[miUINT8] %u\n", *((unsigned char *)buf));
+                    }
+                    break;
+                }
+                case miINT16:
+                {
+                    num = (bytes / 2);
+                    for (i=0; i<num; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                        if (i == 0) printf("[miINT16] %d\n", *((short *)buf));
+                    }
+                    break;
+                }
+                case miUINT16:
+                {
+                    num = (bytes / 2);
+                    for (i=0; i<num; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                        if (i == 0) printf("[miUINT16] %u\n", *((unsigned short *)buf));
+                    }
+                    break;
+                }
+                case miINT32:
+                {
+                    num = (bytes / 4);
+                    for (i=0; i<num; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                        if (i == 0) printf("[miINT32] %d\n", *((int *)buf));
+                    }
+                    break;
+                }
+                case miUINT32:
+                {
+                    num = (bytes / 4);
+                    for (i=0; i<num; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                        if (i == 0) printf("[miUINT32] %u\n", *((unsigned int *)buf));
+                    }
+                    break;
+                }
+                case miSINGLE:
+                {
+                    num = (bytes / 4);
+                    for (i=0; i<num; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                        if (i == 0) printf("[miSINGLE] %f\n", *((float *)buf));
+                    }
+                    break;
+                }
+                case miDOUBLE:
+                {
+                    num = (bytes / 8);
+                    for (i=0; i<num; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                        if (i == 0) printf("[miDOUBLE] %f\n", *((double *)buf));
+                    }
+                    break;
+                }
+                case miINT64:
+                {
+                    num = (bytes / 8);
+                    for (i=0; i<num; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                        if (i == 0) printf("[miINT64] %lld\n", *((long long *)buf));
+                    }
+                    break;
+                }
+                case miUINT64:
+                {
+                    num = (bytes / 8);
+                    for (i=0; i<num; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                        if (i == 0) printf("[miUINT64] %llu\n", *((unsigned long long *)buf));
+                    }
+                    break;
+                }
+                case miMATRIX:
+                {
+                    printf("[miMATRIX]\n");
+                    mat_readArray(pFile, __LINE__);
+                    break;
+                }
+                case miCOMPRESSED:
+                {
+                    printf("[miCOMPRESSED] unsupport\n");
+                    for (i=0; i<tag.bytes; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                    }
+                    break;
+                }
+                case miUTF8:
+                {
+                    printf("[miUTF8] unsupport\n");
+                    for (i=0; i<bytes; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                    }
+                    break;
+                }
+                case miUTF16:
+                {
+                    printf("[miUTF16] unsupport\n");
+                    for (i=0; i<bytes; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                    }
+                    break;
+                }
+                case miUTF32:
+                {
+                    printf("[miUTF32] unsupport\n");
+                    for (i=0; i<bytes; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                    }
+                    break;
+                }
+                default:
+                {
+                    printf("ERR: wrong type %d\n", tag.type);
+                    for (i=0; i<bytes; i++)
+                    {
+                        fread(buf, 1, 1, pFile);
+                    }
+                    break;
+                }
             }
-            default:
-            {
-                printf("ERR: unknown type %d\n", tag.type);
-                fread(pBuf, bufLen, 1, pFile);
-                break;
-            }
-        }
-        printf("\n");
+            printf("\n");
 
-        matLen -= bufLen;
-        count++;
+            matLen -= ((tag.type != miCOMPRESSED) ? bytes : tag.bytes);
+        }
     }
 
-_EXIT:
-    if ( pBuf ) free( pBuf );
     fclose( pFile );
     return 0;
 }
-
 
 int main(int argc, char *argv[])
 {

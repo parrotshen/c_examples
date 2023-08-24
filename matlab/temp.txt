@@ -23,7 +23,8 @@
 
 # Header flags
 0000007C :
- 00 01 49 4D
+ 00 01
+ 49 4D
 
 # Data element
 00000080 :

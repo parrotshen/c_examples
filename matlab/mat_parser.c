@@ -25,6 +25,7 @@ typedef enum
     miUTF8 = 16,
     miUTF16 = 17,
     miUTF32 = 18,
+    miMAX
 } tMatType;
 
 typedef struct _tMatHdr
@@ -40,6 +41,29 @@ typedef struct _tMatTag
     unsigned int   bytes;
     int            small;
 } tMatTag;
+
+
+char g_symbol[miMAX][16] = {
+    "--",
+    "miINT8",
+    "miUINT8",
+    "miINT16",
+    "miUINT16",
+    "miINT32",
+    "miUINT32",
+    "miSINGLE",
+    "--",
+    "miDOUBLE",
+    "--",
+    "--",
+    "miINT64",
+    "miUINT64",
+    "miMATRIX",
+    "miCOMPRESSED",
+    "miUTF8",
+    "miUTF16",
+    "miUTF32"
+};
 
 
 void mat_printArray(void *pBuf, int bufLen, int type, int num)
@@ -244,6 +268,8 @@ int mat_readArray(FILE *pFile, int debug)
 
     if (2 == class)
     {
+        int fields = 0;
+
         /* [4] Field Name Length */
         if (mat_readTag(pFile, &tag, __LINE__) != 0)
         {
@@ -276,11 +302,12 @@ int mat_readArray(FILE *pFile, int debug)
         for (i=0; i<bytes; i+=num)
         {
             printf(" %s\n", (char *)(pBuf + i));
+            fields++;
         }
         printf("\n");
 
         /* [6] Fields */
-        for (i=0; i<num; i++)
+        for (i=0; i<fields; i++)
         {
             if (mat_readTag(pFile, &tag, __LINE__) != 0)
             {
@@ -294,7 +321,7 @@ int mat_readArray(FILE *pFile, int debug)
                 goto _EXIT;
             }
 
-            printf("Fields: %u %u\n", tag.type, tag.bytes);
+            printf("Fields (%d): %u %u\n", (i + 1), tag.type, tag.bytes);
             bytes = ((tag.small == 0) ? ALIGN_8_BYTES( tag.bytes ) : 4);
             if (mat_readArray(pFile, __LINE__) != 0)
             {
@@ -361,7 +388,7 @@ int mat_parserFile(char *pInput)
     tMatTag tag;
     unsigned char buf[8];
     int matLen;
-    int count;
+    int count = 0;
     int i;
 
 
@@ -411,9 +438,9 @@ int mat_parserFile(char *pInput)
         ((0x4D49 == hdr.flag[1]) ? "little endian" : "big endian")
     );
 
-    count = 1;
     while (matLen > 0)
     {
+        count++;
         if (mat_readTag(pFile, &tag, __LINE__) != 0)
         {
             printf("ERR: read Data Element #%d\n", count);
@@ -422,13 +449,19 @@ int mat_parserFile(char *pInput)
         }
         matLen -= ((tag.small == 0) ? 8 : 4);
 
-        printf("Data Element Tag:\n %u\n %u\n\n", tag.type, tag.bytes);
+        printf(
+            "Data Element Tag:\n %u %s\n %u\n\n",
+            tag.type,
+            ((tag.type < miMAX) ? g_symbol[tag.type] : "ERROR"),
+            tag.bytes
+        );
 
         if (tag.bytes > 0)
         {
             int bytes = ALIGN_8_BYTES( tag.bytes ); /* actual data size */
             int num;
 
+            printf("Data Field #%d:\n", count);
             switch ( tag.type )
             {
                 case miINT8:
@@ -437,7 +470,7 @@ int mat_parserFile(char *pInput)
                     for (i=0; i<num; i++)
                     {
                         fread(buf, 1, 1, pFile);
-                        if (i == 0) printf("[miINT8] %d\n", *((char *)buf));
+                        if (i == 0) printf(" %d\n", *((char *)buf));
                     }
                     break;
                 }
@@ -447,7 +480,7 @@ int mat_parserFile(char *pInput)
                     for (i=0; i<num; i++)
                     {
                         fread(buf, 1, 1, pFile);
-                        if (i == 0) printf("[miUINT8] %u\n", *((unsigned char *)buf));
+                        if (i == 0) printf(" %u\n", *((unsigned char *)buf));
                     }
                     break;
                 }
@@ -457,7 +490,7 @@ int mat_parserFile(char *pInput)
                     for (i=0; i<num; i++)
                     {
                         fread(buf, 1, 1, pFile);
-                        if (i == 0) printf("[miINT16] %d\n", *((short *)buf));
+                        if (i == 0) printf(" %d\n", *((short *)buf));
                     }
                     break;
                 }
@@ -467,7 +500,7 @@ int mat_parserFile(char *pInput)
                     for (i=0; i<num; i++)
                     {
                         fread(buf, 1, 1, pFile);
-                        if (i == 0) printf("[miUINT16] %u\n", *((unsigned short *)buf));
+                        if (i == 0) printf(" %u\n", *((unsigned short *)buf));
                     }
                     break;
                 }
@@ -477,7 +510,7 @@ int mat_parserFile(char *pInput)
                     for (i=0; i<num; i++)
                     {
                         fread(buf, 1, 1, pFile);
-                        if (i == 0) printf("[miINT32] %d\n", *((int *)buf));
+                        if (i == 0) printf(" %d\n", *((int *)buf));
                     }
                     break;
                 }
@@ -487,7 +520,7 @@ int mat_parserFile(char *pInput)
                     for (i=0; i<num; i++)
                     {
                         fread(buf, 1, 1, pFile);
-                        if (i == 0) printf("[miUINT32] %u\n", *((unsigned int *)buf));
+                        if (i == 0) printf(" %u\n", *((unsigned int *)buf));
                     }
                     break;
                 }
@@ -497,7 +530,7 @@ int mat_parserFile(char *pInput)
                     for (i=0; i<num; i++)
                     {
                         fread(buf, 1, 1, pFile);
-                        if (i == 0) printf("[miSINGLE] %f\n", *((float *)buf));
+                        if (i == 0) printf(" %f\n", *((float *)buf));
                     }
                     break;
                 }
@@ -507,7 +540,7 @@ int mat_parserFile(char *pInput)
                     for (i=0; i<num; i++)
                     {
                         fread(buf, 1, 1, pFile);
-                        if (i == 0) printf("[miDOUBLE] %f\n", *((double *)buf));
+                        if (i == 0) printf(" %f\n", *((double *)buf));
                     }
                     break;
                 }
@@ -517,7 +550,7 @@ int mat_parserFile(char *pInput)
                     for (i=0; i<num; i++)
                     {
                         fread(buf, 1, 1, pFile);
-                        if (i == 0) printf("[miINT64] %lld\n", *((long long *)buf));
+                        if (i == 0) printf(" %lld\n", *((long long *)buf));
                     }
                     break;
                 }
@@ -527,19 +560,18 @@ int mat_parserFile(char *pInput)
                     for (i=0; i<num; i++)
                     {
                         fread(buf, 1, 1, pFile);
-                        if (i == 0) printf("[miUINT64] %llu\n", *((unsigned long long *)buf));
+                        if (i == 0) printf(" %llu\n", *((unsigned long long *)buf));
                     }
                     break;
                 }
                 case miMATRIX:
                 {
-                    printf("[miMATRIX]\n");
                     mat_readArray(pFile, __LINE__);
                     break;
                 }
                 case miCOMPRESSED:
                 {
-                    printf("[miCOMPRESSED] unsupport\n");
+                    printf(" miCOMPRESSED is unsupport\n");
                     for (i=0; i<tag.bytes; i++)
                     {
                         fread(buf, 1, 1, pFile);
@@ -548,7 +580,7 @@ int mat_parserFile(char *pInput)
                 }
                 case miUTF8:
                 {
-                    printf("[miUTF8] unsupport\n");
+                    printf(" miUTF8 is unsupport\n");
                     for (i=0; i<bytes; i++)
                     {
                         fread(buf, 1, 1, pFile);
@@ -557,7 +589,7 @@ int mat_parserFile(char *pInput)
                 }
                 case miUTF16:
                 {
-                    printf("[miUTF16] unsupport\n");
+                    printf(" miUTF16 is unsupport\n");
                     for (i=0; i<bytes; i++)
                     {
                         fread(buf, 1, 1, pFile);
@@ -566,7 +598,7 @@ int mat_parserFile(char *pInput)
                 }
                 case miUTF32:
                 {
-                    printf("[miUTF32] unsupport\n");
+                    printf(" miUTF32 is unsupport\n");
                     for (i=0; i<bytes; i++)
                     {
                         fread(buf, 1, 1, pFile);

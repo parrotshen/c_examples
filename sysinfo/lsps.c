@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     FILE *pFile;
     char *pCh;
 
-    char  path[80];
+    char  path[512];
     char  line[256];
     char  command[256];
     int   found;
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        snprintf(path, 79, "/proc/%s/status", pEntry->d_name);
+        snprintf(path, 511, "/proc/%s/status", pEntry->d_name);
 
         pFile = fopen(path, "r");
         if (NULL == pFile)

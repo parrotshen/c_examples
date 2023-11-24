@@ -1,24 +1,30 @@
 CC = gcc
 
-all: sysconf sysinfo rlimit rusage lsps lsnet
+all: sysconf sysinfo rlimit rusage lsps lsnet gethostbyname getaddrinfo
 
 sysconf: sysconf.c
-	$(CC) -Wall sysconf.c -o sysconf
+	$(CC) $< -Wall -o $@
 
 sysinfo: sysinfo.c
-	$(CC) -Wall sysinfo.c -o sysinfo
+	$(CC) $< -Wall -o $@
 
 rlimit: rlimit.c
-	$(CC) -Wall rlimit.c -o rlimit
+	$(CC) $< -Wall -o $@
 
 rusage: rusage.c
-	$(CC) -Wall rusage.c -o rusage
+	$(CC) $< -Wall -o $@
 
 lsps: lsps.c
-	$(CC) -Wall lsps.c -o lsps
+	$(CC) $< -Wall -o $@
 
 lsnet: lsnet.c
-	$(CC) -Wall lsnet.c -o lsnet
+	$(CC) $< -Wall -o $@
+
+gethostbyname: gethostbyname.c
+	$(CC) $< -Wall -o $@
+
+getaddrinfo: getaddrinfo.c
+	$(CC) $< -Wall -o $@
 
 clean:
-	rm -f sysconf sysinfo rlimit rusage lsps lsnet
+	rm -f sysconf sysinfo rlimit rusage lsps lsnet gethostbyname getaddrinfo

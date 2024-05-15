@@ -6,6 +6,7 @@ APPS += euler pi prime random
 APPS += remainder gcd_lcm factorize factorial
 APPS += powxy logx nthroot
 APPS += sinewave
+APPS += rounding
 
 all: $(APPS)
 
@@ -53,6 +54,9 @@ nthroot: nthroot.c
 
 sinewave: sinewave.c
 	$(CC) $< $(CFLAGS) -lm -o $@
+
+rounding: rounding.c
+	$(CC) $< $(CFLAGS) -o $@
 
 clean:
 	rm -f $(APPS)

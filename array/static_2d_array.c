@@ -33,6 +33,7 @@ void dump(void *pMem, int size)
 
 int main(int argc, char *argv[])
 {
+    unsigned char (*ptr)[8] = g_array;
     int i;
 
     printf("\n");
@@ -50,27 +51,27 @@ int main(int argc, char *argv[])
     printf("\n\n");
     printf("2) array element address:\n");
     printf("\n");
-    printf("%p = &garray[0]\n", &g_array[0]);
-    printf("%p = &garray[1]\n", &g_array[1]);
-    printf("%p = &garray[2]\n", &g_array[2]);
-    printf("%p = &garray[3]\n", &g_array[3]);
+    printf("%p = &g_array[0]\n", &g_array[0]);
+    printf("%p = &g_array[1]\n", &g_array[1]);
+    printf("%p = &g_array[2]\n", &g_array[2]);
+    printf("%p = &g_array[3]\n", &g_array[3]);
     printf("\n");
-    printf("%p = &garray[0][0]\n", &g_array[0][0]);
-    printf("%p = &garray[1][0]\n", &g_array[1][0]);
-    printf("%p = &garray[2][0]\n", &g_array[2][0]);
-    printf("%p = &garray[3][0]\n", &g_array[3][0]);
+    printf("%p = &g_array[0][0]\n", &g_array[0][0]);
+    printf("%p = &g_array[1][0]\n", &g_array[1][0]);
+    printf("%p = &g_array[2][0]\n", &g_array[2][0]);
+    printf("%p = &g_array[3][0]\n", &g_array[3][0]);
     printf("\n\n");
     printf("3) array element value:\n");
     printf("\n");
-    printf("%p = garray[0]\n", g_array[0]);
-    printf("%p = garray[1]\n", g_array[1]);
-    printf("%p = garray[2]\n", g_array[2]);
-    printf("%p = garray[3]\n", g_array[3]);
+    printf("%p = g_array[0]\n", g_array[0]);
+    printf("%p = g_array[1]\n", g_array[1]);
+    printf("%p = g_array[2]\n", g_array[2]);
+    printf("%p = g_array[3]\n", g_array[3]);
     printf("\n");
-    printf("%2d = garray[0][0]\n", g_array[0][0]);
-    printf("%2d = garray[1][0]\n", g_array[1][0]);
-    printf("%2d = garray[2][0]\n", g_array[2][0]);
-    printf("%2d = garray[3][0]\n", g_array[3][0]);
+    printf("%2d = g_array[0][0]\n", g_array[0][0]);
+    printf("%2d = g_array[1][0]\n", g_array[1][0]);
+    printf("%2d = g_array[2][0]\n", g_array[2][0]);
+    printf("%2d = g_array[3][0]\n", g_array[3][0]);
     printf("\n");
     printf("%p = *(g_array)\n", *(g_array));
     printf("%p = *(g_array + 1)\n", *(g_array + 1));
@@ -86,6 +87,16 @@ int main(int argc, char *argv[])
     printf("%2d = *(g_array[1])\n", *(g_array[1]));
     printf("%2d = *(g_array[2])\n", *(g_array[2]));
     printf("%2d = *(g_array[3])\n", *(g_array[3]));
+    printf("\n");
+    printf("4) pointer for this 4x8 array:\n");
+    printf("\n");
+    printf("%p = g_array = ptr\n", ptr);
+    printf("%ld = sizeof( ptr )\n", sizeof( ptr ));
+    printf("\n");
+    printf("%2d = ptr[0][0]\n", ptr[0][0]);
+    printf("%2d = ptr[1][0]\n", ptr[1][0]);
+    printf("%2d = ptr[2][0]\n", ptr[2][0]);
+    printf("%2d = ptr[3][0]\n", ptr[3][0]);
     printf("\n\n");
 
 

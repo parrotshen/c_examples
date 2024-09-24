@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 
+/* sizeof(tTest) = 32 */
 typedef struct _tTest
 {
     int  A;
@@ -58,21 +59,24 @@ int main(void)
 {
     tTest *pTest;
     void *pBuf;
-    int  *pVal;
     int i;
 
 
     pBuf = malloc( 1024 );
-    pVal = (int *)pBuf;
     for (i=0; i<256; i++)
     {
-        *pVal = (i + 1);
-        pVal++;
+        ((int *)pBuf)[i] = (i + 1);
     }
     printf("pBuf at %p\n", pBuf);
     dump(pBuf, 128);
 
 
+    /*
+    *        +----------+----------+----------+----------+
+    * pBuf ->| pTest[0] | pTest[1] | pTest[2] | pTest[3] |
+    *        +----------+----------+----------+----------+
+    *          32-byte    32-byte    32-byte    32-byte
+    */
     pTest = (tTest *)pBuf;
 
     for (i=0; i<4; i++)

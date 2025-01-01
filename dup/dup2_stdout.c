@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     if (argc > 1) filename = argv[1];
 
     printf("[dup2_stdout] printf at %d\n", __LINE__);
-    oldfd = open(filename, O_RDWR);
+    oldfd = open(filename, O_WRONLY);
     if (oldfd >= 0)
     {
         #if (DUP2_STDOUT)

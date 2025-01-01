@@ -1,6 +1,6 @@
 CC = gcc
 
-all: sysconf sysinfo rlimit rusage lsps lsnet gethostbyname getaddrinfo
+all: sysconf sysinfo rlimit rusage lsps lsnet gethostbyname getaddrinfo terminal
 
 sysconf: sysconf.c
 	$(CC) $< -Wall -o $@
@@ -26,5 +26,8 @@ gethostbyname: gethostbyname.c
 getaddrinfo: getaddrinfo.c
 	$(CC) $< -Wall -o $@
 
+terminal: terminal.c
+	$(CC) $< -Wall -o $@
+
 clean:
-	rm -f sysconf sysinfo rlimit rusage lsps lsnet gethostbyname getaddrinfo
+	rm -f sysconf sysinfo rlimit rusage lsps lsnet gethostbyname getaddrinfo terminal

@@ -8,6 +8,8 @@
 #include <sys/user.h>   /* struct user_regs_struct */
 
 
+#define PRINT_REGISTERS 0
+
 /*
 * #include <sys/ptrace.h>
 *
@@ -18,7 +20,6 @@
 *          void  *data
 *      );
 */
-
 
 int g_pid = 0;
 int g_sig = 0;
@@ -74,6 +75,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    #if (PRINT_REGISTERS)
     printf(
         "%-8s  %-8s  %-8s  %-8s  %-8s  %-8s\n",
         "EIP",
@@ -83,6 +85,7 @@ int main(int argc, char *argv[])
         "ECX",
         "EDX"
     );
+    #endif
     do
     {
         for (i=0; i<steps; i++)
@@ -110,6 +113,7 @@ int main(int argc, char *argv[])
             {
                 perror( "ptrace (PTRACE_GETREGS)" );
             }
+            #if (PRINT_REGISTERS)
             printf(
                 "%08lx  %08lx  %08lx  %08lx  %08lx  %08lx\n",
                 regs.eip,
@@ -119,9 +123,11 @@ int main(int argc, char *argv[])
                 regs.ecx,
                 regs.edx
             );
+            #endif
             count++;
             if (0 == (count % 10))
             {
+                #if (PRINT_REGISTERS)
                 printf(
                     "%-8s  %-8s  %-8s  %-8s  %-8s  %-8s\n",
                     "EIP",
@@ -131,6 +137,7 @@ int main(int argc, char *argv[])
                     "ECX",
                     "EDX"
                 );
+                #endif
             }
         }
 

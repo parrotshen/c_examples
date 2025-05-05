@@ -3,12 +3,30 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include <signal.h>
 #include <errno.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+
+int fd_server = -1;
+int fd_client = -1;
+
+void endHdlr(int arg)
+{
+    if (fd_client >= 0)
+    {
+        close( fd_client );
+        fd_client = -1;
+    }
+    if (fd_server >= 0)
+    {
+        close( fd_server );
+        fd_server = -1;
+    }
+}
 
 void sslServer(int port)
 {
@@ -18,13 +36,15 @@ void sslServer(int port)
 
     struct sockaddr_in addr;
     socklen_t addrLen;
-    int fd_server;
-    int fd_client;
     int option;
 
     unsigned char buf[4096];
     int len;
 
+
+    signal(SIGINT,  endHdlr);
+    signal(SIGKILL, endHdlr);
+    signal(SIGTERM, endHdlr);
 
     method = TLS_server_method();
     if ( !method )
@@ -66,6 +86,7 @@ void sslServer(int port)
     {
         perror( "setsockopt" );
         close( fd_server );
+        fd_server = -1;
         SSL_CTX_free( ctx );
         return;
     }
@@ -78,6 +99,7 @@ void sslServer(int port)
     {
         perror( "bind" );
         close( fd_server );
+        fd_server = -1;
         SSL_CTX_free( ctx );
         return;
     }
@@ -86,6 +108,7 @@ void sslServer(int port)
     {
         perror( "listen" );
         close( fd_server );
+        fd_server = -1;
         SSL_CTX_free( ctx );
         return;
     }
@@ -102,6 +125,7 @@ void sslServer(int port)
         if (fd_client < 0)
         {
             perror( "accept" );
+            if (fd_server < 0) break;
             continue;
         }
 
@@ -111,6 +135,7 @@ void sslServer(int port)
             perror( "SSL_set_fd" );
             SSL_free( ssl );
             close( fd_client );
+            fd_client = -1;
             continue;
         }
 
@@ -119,6 +144,7 @@ void sslServer(int port)
             perror( "SSL_accept" );
             SSL_free( ssl );
             close( fd_client );
+            fd_client = -1;
             continue;
         }
 
@@ -134,7 +160,7 @@ void sslServer(int port)
             }
             else if (len == 0)
             {
-                printf("SSL server: client closed\n");
+                printf("SSL server: client closed\n\n");
                 break;
             }
 
@@ -149,10 +175,18 @@ void sslServer(int port)
 
         SSL_shutdown( ssl );
         SSL_free( ssl );
-        close( fd_client );
+        if (fd_client >= 0)
+        {
+            close( fd_client );
+            fd_client = -1;
+        }
     }
 
-    close( fd_server );
+    if (fd_server >= 0)
+    {
+        close( fd_server );
+        fd_server = -1;
+    }
     SSL_CTX_free( ctx );
     printf("SSL server: exit\n");
 }
@@ -166,12 +200,15 @@ void sslClient(char *ipaddr, int port)
 
     struct sockaddr_in addr;
     socklen_t addrLen;
-    int fd_client;
 
     time_t now;
     unsigned char buf[4096];
     int len;
 
+
+    signal(SIGINT,  endHdlr);
+    signal(SIGKILL, endHdlr);
+    signal(SIGTERM, endHdlr);
 
     method = TLS_client_method();
     if ( !method )
@@ -187,7 +224,7 @@ void sslClient(char *ipaddr, int port)
         return;
     }
 
-    #if 0
+    #if 1
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
     if ( !SSL_CTX_load_verify_locations(ctx, "ssl_cert.pem", NULL))
     {
@@ -212,6 +249,7 @@ void sslClient(char *ipaddr, int port)
     {
         perror( "connect" );
         close( fd_client );
+        fd_client = -1;
         SSL_CTX_free( ctx );
         return;
     }
@@ -223,6 +261,7 @@ void sslClient(char *ipaddr, int port)
     {
         perror( "SSL_set_fd" );
         close( fd_client );
+        fd_client = -1;
         SSL_CTX_free( ctx );
         return;
     }
@@ -232,6 +271,7 @@ void sslClient(char *ipaddr, int port)
     {
         perror( "SSL_connect" );
         close( fd_client );
+        fd_client = -1;
         SSL_CTX_free( ctx );
         return;
     }
@@ -244,6 +284,7 @@ void sslClient(char *ipaddr, int port)
     {
         perror( "SSL_write" );
         close( fd_client );
+        fd_client = -1;
         SSL_CTX_free( ctx );
         return;
     }
@@ -253,6 +294,7 @@ void sslClient(char *ipaddr, int port)
     {
         perror( "SSL_read" );
         close( fd_client );
+        fd_client = -1;
         SSL_CTX_free( ctx );
         return;
     }
@@ -260,7 +302,11 @@ void sslClient(char *ipaddr, int port)
     buf[len] = 0;
     printf("SSL client:\n%s\n", (char *)buf);
 
-    close( fd_client );
+    if (fd_client >= 0)
+    {
+        close( fd_client );
+        fd_client = -1;
+    }
     SSL_CTX_free( ctx );
     printf("SSL client: exit\n");
 }

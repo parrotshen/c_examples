@@ -28,8 +28,6 @@ typedef struct _tBmpFile
     unsigned int   importantColors;
 } __attribute__((packed)) tBmpFile;
 
-tBmpFile g_bmp;
-
 
 /* Bitmap file: 24-bit color */
 int bmp_to_file(
@@ -39,6 +37,7 @@ int bmp_to_file(
     char      *pName
 )
 {
+    tBmpFile bmpFile;
     FILE *pFile;
     unsigned char pixel[3];
     unsigned char pad = 0;
@@ -51,24 +50,24 @@ int bmp_to_file(
     row[0] = (3 * width);
     row[1] = (((24 * width) + 31) / 32) *4;
 
-    g_bmp.magic[0] = 'B';
-    g_bmp.magic[1] = 'M';
-    g_bmp.size = 54 + (row[1] * height);
-    g_bmp.reserved1 = 0;
-    g_bmp.reserved2 = 0;
-    g_bmp.offset = 54;
+    bmpFile.magic[0] = 'B';
+    bmpFile.magic[1] = 'M';
+    bmpFile.size = 54 + (row[1] * height);
+    bmpFile.reserved1 = 0;
+    bmpFile.reserved2 = 0;
+    bmpFile.offset = 54;
 
-    g_bmp.dipSize = 40;
-    g_bmp.width = width;
-    g_bmp.height = height;
-    g_bmp.plane = 1;
-    g_bmp.pixelBits = 24;
-    g_bmp.compress = 0;
-    g_bmp.imageSize = (row[1] * height);
-    g_bmp.hResolution = 0;
-    g_bmp.vResolution = 0;
-    g_bmp.paletteNumber = 0;
-    g_bmp.importantColors = 0;
+    bmpFile.dipSize = 40;
+    bmpFile.width = width;
+    bmpFile.height = height;
+    bmpFile.plane = 1;
+    bmpFile.pixelBits = 24;
+    bmpFile.compress = 0;
+    bmpFile.imageSize = (row[1] * height);
+    bmpFile.hResolution = 0;
+    bmpFile.vResolution = 0;
+    bmpFile.paletteNumber = 0;
+    bmpFile.importantColors = 0;
 
 
     if ((pFile = fopen(pName, "w")) == NULL)
@@ -77,7 +76,7 @@ int bmp_to_file(
         return -1;
     }
 
-    fwrite(&g_bmp, sizeof(tBmpFile), 1, pFile);
+    fwrite(&bmpFile, sizeof(tBmpFile), 1, pFile);
 
     for (y=(height-1); y>=0; y--)
     {

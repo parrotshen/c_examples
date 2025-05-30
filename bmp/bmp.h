@@ -2,18 +2,28 @@
 #define __BMP_H__
 
 
+#define PIXEL_RGB(pixel, r, g, b) \
+    { pixel.R = r; pixel.G = g; pixel.B = b; }
+
 typedef struct _tBmpPixel
 {
-    unsigned int R;
-    unsigned int G;
-    unsigned int B;
+    unsigned char R;
+    unsigned char G;
+    unsigned char B;
 } tBmpPixel;
 
 
-int bmp_to_file(
+int bmp16_to_file(
     tBmpPixel *pPixels,
-    int        width,
     int        height,
+    int        width,
+    char      *pName
+);
+
+int bmp24_to_file(
+    tBmpPixel *pPixels,
+    int        height,
+    int        width,
     char      *pName
 );
 

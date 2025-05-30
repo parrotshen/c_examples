@@ -1,12 +1,15 @@
 CC = gcc
 
-all: main
+all: test16 test24
 
-main: main.o bmp.o
+test16: test16.o bmp.o
+	$(CC) $^ -o $@
+
+test24: test24.o bmp.o
 	$(CC) $^ -o $@
 
 %.o: %.c bmp.h
 	$(CC) -Wall -c $< -o $@
 
 clean:
-	rm -f main *.o
+	rm -f test16 test24 *.o

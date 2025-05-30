@@ -29,11 +29,83 @@ typedef struct _tBmpFile
 } __attribute__((packed)) tBmpFile;
 
 
-/* Bitmap file: 24-bit color */
-int bmp_to_file(
+/* Bitmap file: 16-bit color */
+int bmp16_to_file(
     tBmpPixel *pPixels,
-    int        width,
     int        height,
+    int        width,
+    char      *pName
+)
+{
+    tBmpFile bmpFile;
+    FILE *pFile;
+    unsigned char pixel[2];
+    unsigned char pad = 0;
+    int row[2];
+    int x;
+    int y;
+    int i;
+
+
+    row[0] = (2 * width);
+    row[1] = (((16 * width) + 31) / 32) *4;
+
+    bmpFile.magic[0] = 'B';
+    bmpFile.magic[1] = 'M';
+    bmpFile.size = 54 + (row[1] * height);
+    bmpFile.reserved1 = 0;
+    bmpFile.reserved2 = 0;
+    bmpFile.offset = 54;
+
+    bmpFile.dipSize = 40;
+    bmpFile.width = width;
+    bmpFile.height = height;
+    bmpFile.plane = 1;
+    bmpFile.pixelBits = 16;
+    bmpFile.compress = 0;
+    bmpFile.imageSize = (row[1] * height);
+    bmpFile.hResolution = 0;
+    bmpFile.vResolution = 0;
+    bmpFile.paletteNumber = 0;
+    bmpFile.importantColors = 0;
+
+
+    if ((pFile = fopen(pName, "w")) == NULL)
+    {
+        perror( "fopen" );
+        return -1;
+    }
+
+    fwrite(&bmpFile, sizeof(tBmpFile), 1, pFile);
+
+    for (y=(height-1); y>=0; y--)
+    {
+        i = width * y;
+        for (x=0; x<row[0]; x+=2)
+        {
+            pixel[0] = ((pPixels[i].B & 0x1F)     ) |
+                       ((pPixels[i].G & 0x1F) << 5);
+            pixel[1] = ((pPixels[i].G & 0x1F) >> 3) |
+                       ((pPixels[i].R & 0x1F) << 2);
+            fwrite(pixel, 2, 1, pFile);
+            i++;
+        }
+        for (; x<row[1]; x++)
+        {
+            fwrite(&pad, 1, 1, pFile);
+        }
+    }
+
+    fclose( pFile );
+
+    return 0;
+}
+
+/* Bitmap file: 24-bit color */
+int bmp24_to_file(
+    tBmpPixel *pPixels,
+    int        height,
+    int        width,
     char      *pName
 )
 {

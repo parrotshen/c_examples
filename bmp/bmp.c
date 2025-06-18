@@ -29,6 +29,97 @@ typedef struct _tBmpFile
 } __attribute__((packed)) tBmpFile;
 
 
+/* Bitmap file: 8-bit color */
+int bmp8_to_file(
+    tBmpPixel *pPalette,
+    int        number,
+    tBmpPixel *pPixels,
+    int        height,
+    int        width,
+    char      *pName
+)
+{
+    tBmpFile bmpFile;
+    FILE *pFile;
+    unsigned int  palette[256];
+    unsigned char pixel;
+    unsigned char pad = 0;
+    int row[2];
+    int x;
+    int y;
+    int i;
+    int j;
+
+
+    row[0] = width;
+    row[1] = (((8 * width) + 31) / 32) *4;
+
+    bmpFile.magic[0] = 'B';
+    bmpFile.magic[1] = 'M';
+    bmpFile.size = 1078 + (row[1] * height);
+    bmpFile.reserved1 = 0;
+    bmpFile.reserved2 = 0;
+    bmpFile.offset = 1078;
+
+    bmpFile.dipSize = 40;
+    bmpFile.width = width;
+    bmpFile.height = height;
+    bmpFile.plane = 1;
+    bmpFile.pixelBits = 8;
+    bmpFile.compress = 0;
+    bmpFile.imageSize = (row[1] * height);
+    bmpFile.hResolution = 0;
+    bmpFile.vResolution = 0;
+    bmpFile.paletteNumber = 0;
+    bmpFile.importantColors = 0;
+
+    memset(palette, 0, sizeof(palette));
+    for (j=0; j<number && j<256; j++)
+    {
+        palette[j]
+         = (pPalette[j].R << 16) | (pPalette[j].G << 8) | (pPalette[j].B);
+    }
+
+
+    if ((pFile = fopen(pName, "w")) == NULL)
+    {
+        perror( "fopen" );
+        return -1;
+    }
+
+    fwrite(&bmpFile, sizeof(tBmpFile), 1, pFile);
+    fwrite(palette, sizeof(palette), 1, pFile);
+
+    for (y=(height-1); y>=0; y--)
+    {
+        i = width * y;
+        for (x=0; x<row[0]; x++)
+        {
+            pixel = 255;
+            for (j=0; j<number; j++)
+            {
+                if ((pPalette[j].R == pPixels[i].R) &&
+                    (pPalette[j].G == pPixels[i].G) &&
+                    (pPalette[j].B == pPixels[i].B))
+                {
+                    pixel = j;
+                    break;
+                }
+            }
+            fwrite(&pixel, 1, 1, pFile);
+            i++;
+        }
+        for (; x<row[1]; x++)
+        {
+            fwrite(&pad, 1, 1, pFile);
+        }
+    }
+
+    fclose( pFile );
+
+    return 0;
+}
+
 /* Bitmap file: 16-bit color */
 int bmp16_to_file(
     tBmpPixel *pPixels,

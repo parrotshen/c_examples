@@ -13,6 +13,15 @@ typedef struct _tBmpPixel
 } tBmpPixel;
 
 
+int bmp8_to_file(
+    tBmpPixel *pPalette,
+    int        number,
+    tBmpPixel *pPixels,
+    int        height,
+    int        width,
+    char      *pName
+);
+
 int bmp16_to_file(
     tBmpPixel *pPixels,
     int        height,

@@ -174,10 +174,10 @@ int bmp16_to_file(
         i = width * y;
         for (x=0; x<row[0]; x+=2)
         {
-            pixel[0] = ((pPixels[i].B & 0x1F)     ) |
-                       ((pPixels[i].G & 0x1F) << 5);
-            pixel[1] = ((pPixels[i].G & 0x1F) >> 3) |
-                       ((pPixels[i].R & 0x1F) << 2);
+            pixel[0] = ((pPixels[i].B >> 3)     ) |
+                       ((pPixels[i].G >> 3) << 5);
+            pixel[1] = ((pPixels[i].G >> 3) >> 3) |
+                       ((pPixels[i].R >> 3) << 2);
             fwrite(pixel, 2, 1, pFile);
             i++;
         }

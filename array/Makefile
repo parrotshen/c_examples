@@ -1,6 +1,7 @@
 CC = gcc
 
-APPS  = pointer_to_array
+APPS += empty_array
+APPS += pointer_to_array
 APPS += static_2d_array
 APPS += dynamic_2d_array
 APPS += array_redimension
@@ -8,6 +9,9 @@ APPS += call_by_value
 APPS += call_by_reference
 
 all: $(APPS)
+
+empty_array: empty_array.c
+	$(CC) -Wall $< -o $@
 
 pointer_to_array: pointer_to_array.c
 	$(CC) -Wall $< -o $@

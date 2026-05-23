@@ -25,17 +25,6 @@ int cmpfunc(const void *a, const void *b)
         b++;
     }
     return 0;
-
-    if (*((char *)a) > 'Z')
-    {
-        if (*((char *)b) > 'Z') return (*((char *)a) - *((char *)b));
-        else return -1;
-    }
-    else
-    {
-        if (*((char *)b) > 'Z') return 1;
-        else return (*((char *)a) - *((char *)b));
-    }
 }
 
 int main(int argc, char *argv[])

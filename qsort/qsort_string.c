@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     }
     printf("\n");
 
-    qsort(data, 10, sizeof(double), cmpfunc);
+    qsort(data, 10, 8, cmpfunc);
 
     printf("After:\n");
     for (i=0; i<10; i++)

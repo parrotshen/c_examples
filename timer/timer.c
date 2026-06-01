@@ -7,7 +7,6 @@
 
 
 unsigned long long g_nsec = 1000000000;
-int g_signo = SIGUSR1;
 int g_oneshot = 0;
 timer_t g_tid = 0;
 
@@ -44,6 +43,7 @@ int main(int argc, char *argv[])
 {
     struct sigevent sev;
     struct itimerspec its;
+    int signo;
     int ch;
 
 
@@ -71,10 +71,11 @@ int main(int argc, char *argv[])
     }
 
 
-    signal(g_signo, timeout);
+    signo = SIGRTMIN;
+    signal(signo, timeout);
 
     sev.sigev_notify = SIGEV_SIGNAL;
-    sev.sigev_signo = g_signo;
+    sev.sigev_signo = signo;
     sev.sigev_value.sival_ptr = &g_tid;
 
     if (timer_create(CLOCK_REALTIME, &sev, &g_tid) != 0)

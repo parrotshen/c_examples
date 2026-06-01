@@ -6,9 +6,21 @@
 
 int cmpfunc(const void *a, const void *b)
 {
-    while ( *((char *)a) )
+    for (;;)
     {
-        if (*((char *)a) != *((char *)b))
+        if ((*((char *)a) == 0) && (*((char *)b) == 0))
+        {
+            return 0;
+        }
+        else if (*((char *)a) == 0)
+        {
+            return -1;
+        }
+        else if (*((char *)b) == 0)
+        {
+            return 1;
+        }
+        else if (*((char *)a) != *((char *)b))
         {
             if (*((char *)a) > 'Z')
             {

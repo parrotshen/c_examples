@@ -1,7 +1,7 @@
 CC = gcc
 
 all: abort daemon zombie pthread system signal alarm \
-     pause pipe backtrace ptrace ptrace_loop
+     pause pipe backtrace ptrace ptrace_loop getcpu
 
 abort: abort.c
 	$(CC) -Wall $< -o $@
@@ -39,6 +39,9 @@ ptrace: ptrace.c
 ptrace_loop: ptrace_loop.c
 	$(CC) -Wall $< -o $@
 
+getcpu: getcpu.c
+	$(CC) -Wall $< -o $@
+
 clean:
 	rm -f abort daemon zombie pthread system signal alarm
-	rm -f pause pipe backtrace ptrace ptrace_loop
+	rm -f pause pipe backtrace ptrace ptrace_loop getcpu

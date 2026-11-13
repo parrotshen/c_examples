@@ -1,6 +1,6 @@
 CC = gcc
 
-APPS = aes128_ecb aes128_cbc aes128_cfb128 aes128_ofb128
+APPS = aes128_ecb aes128_cbc aes128_ctr aes128_cfb128 aes128_ofb128
 APPS += aes256_gcm
 APPS += sha1 sha256
 APPS += rsa_sign rsa_verify
@@ -13,6 +13,9 @@ aes128_ecb: aes128_ecb.c
 	$(CC) $< -Wall -lcrypto -o $@
 
 aes128_cbc: aes128_cbc.c
+	$(CC) $< -Wall -lcrypto -o $@
+
+aes128_ctr: aes128_ctr.c
 	$(CC) $< -Wall -lcrypto -o $@
 
 aes128_cfb128: aes128_cfb128.c
